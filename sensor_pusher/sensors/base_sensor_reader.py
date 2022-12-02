@@ -1,0 +1,3 @@
+class BaseSensorReader:
+    def read(self):
+        ...
