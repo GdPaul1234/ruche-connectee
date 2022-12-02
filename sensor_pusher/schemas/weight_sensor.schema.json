@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weight_sensor.schema.json",
+  "description": "Weight sensor",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["weight"],
+  "properties": {
+    "weight": {
+      "type": "number",
+      "description": "weight in g"
+    }
+  }
+}

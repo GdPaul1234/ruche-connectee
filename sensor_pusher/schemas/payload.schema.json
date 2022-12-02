@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "payload.schema.json",
+  "description": "Sensor value payload sent to the server",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["updated_at", "source"],
+  "properties": {
+    "updated_at": { "type": "string", "format": "date-time" },
+    "source": {
+      "type": "object",
+      "additionalProperties": "false",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string", "description": "friendly human name" },
+        "type": { "enum": ["temperature", "weight", "gps"] }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "source": { "properties": { "type": { "const": "temperature" } } } } },
+      "then": { "$ref": "temperature_sensor.schema.json" }
+    },
+    {
+      "if": { "properties": { "source": { "properties": { "type": { "const": "weight" } } } } },
+      "then": { "$ref": "weight_sensor.schema.json" }
+    }
+  ]
+}
