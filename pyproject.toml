@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "ruche-connectée"
+version = "0.1.0"
+description = ""
+authors = ["GdPaul1234 <paul.godin1234@outlook.fr>"]
+readme = "README.md"
+packages = [{include = "ruche_connectée"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
