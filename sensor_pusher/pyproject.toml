@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "ruche-connectée"
+name = "sensor-pusher"
 version = "0.1.0"
 description = ""
 authors = ["GdPaul1234 <paul.godin1234@outlook.fr>"]
 readme = "README.md"
-packages = [{include = "ruche_connectée"}]
+packages = [{include = "sensor_pusher"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"

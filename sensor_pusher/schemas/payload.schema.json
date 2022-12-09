@@ -13,7 +13,7 @@
       "required": ["name", "type"],
       "properties": {
         "name": { "type": "string", "description": "friendly human name" },
-        "type": { "enum": ["temperature", "weight", "gps"] }
+        "type": { "enum": ["temperature", "weight", "location"] }
       }
     }
   },
