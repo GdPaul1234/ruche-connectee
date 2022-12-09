@@ -5,6 +5,8 @@ import logging
 import logging.handlers
 import os
 from pathlib import Path
+import time
+import schedule
 import sys
 
 from sensor_pusher.config_loader import ConfigLoader
@@ -29,15 +31,18 @@ SENSOR_TYPE_MAPPING = {
 # TODO: set logger config in main
 logger = logging.getLogger(__name__)
 
+
 class SensorFactory:
     @staticmethod
     def create_sensor_from_type(sensor_type: str):
         return SENSORS_MAPPING[sensor_type]()
 
-class SensorPusher:
+
+class SensorsPusher:
     def __init__(self, config: ConfigParser):
-        # load config
         self._config = config
+        self._sensors = [SensorFactory.create_sensor_from_type(sensor_type)
+                         for sensor_type in self.activated_sensors]
 
     @property
     def activated_sensors(self):
@@ -47,19 +52,16 @@ class SensorPusher:
             if self._config.getboolean(sensor_section, 'active', fallback=False)
         ]
 
-    def initialize_sensors(self):
-        return [SensorFactory.create_sensor_from_type(sensor_type)
-                for sensor_type in self.activated_sensors]
-
     def send_data(self, sensor_type: str, sensor_value):
-        endpoint = self._config.get('Connection', 'endpoint', fallback='https://example.org')
+        endpoint = self._config.get(
+            'Connection', 'endpoint', fallback='https://example.org')
         ...
 
-    def run(self):
+    def get_and_push_data(self):
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(self.activated_sensors)) as executor:
             future_tasks = {
                 executor.submit(sensor.read): sensor.__class__
-                for sensor in self.initialize_sensors()
+                for sensor in self._sensors
             }
 
             for future in concurrent.futures.as_completed(future_tasks):
@@ -73,28 +75,36 @@ class SensorPusher:
                 else:
                     self.send_data(sensor_type, sensor_value)
 
+
 def main():
     scriptname = os.path.basename(__file__)
     parser = argparse.ArgumentParser(scriptname)
     levels = ('DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL')
 
     parser.add_argument('--log-level', default='INFO', choices=levels)
-    parser.add_argument('--config-path', default='config.ini', help='Config path')
+    parser.add_argument(
+        '--config-path', default='config.ini', help='Config path')
 
     options = parser.parse_args()
     config_path = Path(options.config_path)
     config = ConfigLoader(config_path).config
 
-    fh = logging.handlers.TimedRotatingFileHandler(filename=config.get('Logger', 'file_path', fallback='log.txt'))
-    fh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    fh = logging.handlers.TimedRotatingFileHandler(
+        filename=config.get('Logger', 'file_path', fallback='log.txt'))
+    fh.setFormatter(logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 
     # TODO add cloud logger
 
     logging.basicConfig(level=options.log_level, handlers=(fh,))
 
-    sensor_pusher = SensorPusher(config)
-    sensor_pusher.run()
+    sensors_pusher = SensorsPusher(config)
+    schedule.every(3).minutes.do(sensors_pusher.get_and_push_data)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
 
 if __name__ == '__main__':
     sys.exit(main())
-
