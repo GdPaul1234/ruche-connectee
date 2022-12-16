@@ -6,8 +6,8 @@ interface Props {
 }
 
 export default function IconComponent({ className, rounded, small, logo }: Props) {
-  const containerSize = () => small ? 'h-14 w-14' : 'h-44 w-48'
-  const logoSize = () => small ? 'h-16 w-16' : 'h-48 w-48'
+  const containerSize = () => small ? 'h-14 w-14' : 'h-24 w-28'
+  const logoSize = () => small ? 'h-16 w-16' : 'h-28 w-28'
   const marginSize = () => small ? 'mt-[-12px]' : 'mt-[-24px]'
   const roundedBorder = () => rounded ? 'rounded-md' : ''
 
