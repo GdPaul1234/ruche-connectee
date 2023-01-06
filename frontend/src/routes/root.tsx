@@ -21,8 +21,8 @@ export default function Root() {
       </Suspense>}
 
       {isMobile && <Suspense fallback={<div>Loading...</div>}>
-        <MobileMainMenuComponent className="col-span-2 mx-2" hives={hives} />
-        <div className="col-span-full">
+        <MobileMainMenuComponent className="col-span-2 mx-8" hives={hives} />
+        <div className="col-span-full mx-8">
           <Outlet />
         </div>
       </Suspense>}
