@@ -1,7 +1,7 @@
 export type Hive = {
   id: number
   name: string
-  sensors_values: Record<'temperature' | 'humidity' | 'weight' | 'battery', number>
+  sensors_values: Record<'temperature' | 'humidity' | 'weight' | 'alert' | 'battery', number>
 }
 
 export function getHive(hiveId: number): Promise<Hive> {
@@ -12,7 +12,8 @@ export function getHive(hiveId: number): Promise<Hive> {
       temperature: 15,
       humidity: 70,
       weight: 50,
-      battery: 75
+      battery: 75,
+      alert: 2
     }
   })
 }
