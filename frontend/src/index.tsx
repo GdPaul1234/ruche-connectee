@@ -5,7 +5,8 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import './index.css'
 
 import Root from './routes/root'
-import HivePage, { loader as hiveLoader } from './routes/hive.page'
+import HivePage, { loader as hiveLoader } from './routes/hive-show.page'
+import HivePageIndex from './routes/hive-index.page'
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
     path: '/',
     element: <Root />,
     children: [
+      {
+        path: 'hives',
+        element: <HivePageIndex />
+      },
       {
         path: 'hives/:hiveId',
         element: <HivePage />,
