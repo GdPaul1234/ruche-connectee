@@ -1,5 +1,6 @@
 import IconComponent from "./icon.component";
 import logo from '../ressources/ruche.png'
+import { NavLink, useLocation } from "react-router-dom";
 
 type Hive = {
   id: number
@@ -11,16 +12,24 @@ interface Props {
   className?: string
 }
 
-function HiveListComponent({ hives }: Props) {
+function HiveListItemComponent({ id, name }: Props['hives'][number]) {
+  const location = useLocation()
+  const isActive = location.pathname.includes(`/hives/${id}`)
 
-  return <ul className="flex flex-col gap-4">
-    {hives.map(hive => <li className="flex" key={hive.id}>
-      <IconComponent className="rounded-l-lg flex-none" logo={logo} small />
-      <div className="w-full rounded-r-lg px-2 bg-amber-100">
-        <div>{hive.name}</div>
+  return <li className={`rounded-md ${isActive && 'border border-indigo-600'}`}>
+    <NavLink to={`/hives/${id}`} className="flex" >
+      <IconComponent small hoverable active={isActive} className="rounded-l-lg flex-none" logo={logo} />
+      <div className={`w-full rounded-r-lg px-2 ${isActive ? 'bg-amber-200' : 'bg-amber-100'}`}>
+        <div>{name}</div>
         <div className="text-sm font-medium text-slate-700">Subtitle</div>
       </div>
-    </li>)}
+    </NavLink>
+  </li>
+}
+
+function HiveListComponent({ hives }: Props) {
+  return <ul className="flex flex-col gap-4">
+    {hives.map(hive => <HiveListItemComponent key={hive.id} {...hive} />)}
   </ul>
 }
 
