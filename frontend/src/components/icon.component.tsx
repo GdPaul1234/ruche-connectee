@@ -14,11 +14,10 @@ export default function IconComponent({
     activeBorder?: boolean
     logo: string
   }) {
-  const containerSize = () => small ? 'h-14 w-14' : 'h-24 w-28'
-  const logoSize = () => small ? 'h-16 w-16' : 'h-28 w-28'
+  const containerSize = () => small ? 'h-14 w-14' : 'h-36 w-36'
+  const logoSize = () => small ? 'h-16 w-16' : 'h-40 w-40'
   const marginSize = () => small ? 'mt-[-12px]' : 'mt-[-24px]'
   const roundedBorder = () => rounded ? 'rounded-md' : ''
-  const hoverableIcon = () => hoverable && !active && 'hover:opacity-100 opacity-40'
 
   const hoverableDiv = () => {
     if (hoverable) {
@@ -30,6 +29,6 @@ export default function IconComponent({
   }
 
   return <div className={`${roundedBorder()} ${containerSize()} ${hoverableDiv()} ${className}`}>
-    <img className={`block absolute ${logoSize()} ${marginSize()} ${hoverableIcon()}`} src={logo} alt="Hive logo" />
+    <img className={`block absolute ${logoSize()} ${marginSize()}`} src={logo} alt="Hive logo" />
   </div>
 }
