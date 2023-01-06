@@ -3,8 +3,10 @@ import { Hive } from '../services/hive.service'
 import HumidityIcon from '../ressources/humidity_icon.png'
 import TemperatureIcon from '../ressources/temperature_icon.png'
 import WeightIcon from '../ressources/weight_icon.png'
+import AlertIcon from '../ressources/alert_icon.png'
 import BatteryIcon from '../ressources/battery_icon.png'
 import IconComponent from './icon.component'
+import { NavLink, useLocation } from 'react-router-dom'
 
 function HiveMetric({ name, value }: {
   name: keyof Hive['sensors_values']
@@ -15,18 +17,22 @@ function HiveMetric({ name, value }: {
       humidity: HumidityIcon,
       temperature: TemperatureIcon,
       weight: WeightIcon,
-      battery: BatteryIcon
+      alert: AlertIcon,
+      battery: BatteryIcon,
     }
     return logoFinder[name]
   }
 
-  return <section>
-    <IconComponent rounded small logo={logoForMetricName()} />
-    <div className="text-base md:text-sm w-28 md:w-16">
+  const location = useLocation()
+  const isActive = location.pathname.endsWith(`/${name}`)
+
+  return <NavLink to={name} >
+    <IconComponent rounded small hoverable active={isActive} logo={logoForMetricName()} />
+    <div className={`text-base md:text-sm w-28 md:w-16 ${!isActive && 'opacity-40'}`}>
       <div className="text-ellipsis overflow-hidden">{name}</div>
       <div className="text-sm md:text-xs font-medium text-slate-700">{value} Met</div>
     </div>
-  </section>
+  </NavLink>
 }
 
 export default function HiveMetricsComponent({ sensors }: {

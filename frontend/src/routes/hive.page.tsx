@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router-dom"
+import { Outlet, useLoaderData } from "react-router-dom"
 import HiveMetricsComponent from "../components/hive-metrics.component"
 import { getHive, Hive } from "../services/hive.service"
 
@@ -15,5 +15,6 @@ export default function HivePage() {
 
   return <div className="mt-7">
     <HiveMetricsComponent sensors={hive.sensors_values} />
+    <Outlet />
   </div>
 }

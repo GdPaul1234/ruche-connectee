@@ -16,7 +16,18 @@ const router = createBrowserRouter([
     path: '/',
     element: <Root />,
     children: [
-      { path: 'hives/:hiveId', element: <HivePage />, loader: hiveLoader }
+      {
+        path: 'hives/:hiveId',
+        element: <HivePage />,
+        loader: hiveLoader,
+        children: [
+          { path: 'temperature', element: <div>Temperature</div> },
+          { path: 'humidity', element: <div>Humidity</div> },
+          { path: 'weight', element: <div>Weight</div> },
+          { path: 'battery', element: <div>Battery</div> },
+          { path: 'alert', element: <div>Alert</div> }
+        ]
+      }
     ]
   }
 ])
