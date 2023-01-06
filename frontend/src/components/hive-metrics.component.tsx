@@ -26,8 +26,8 @@ function HiveMetric({ name, value }: {
   const location = useLocation()
   const isActive = location.pathname.endsWith(`/${name}`)
 
-  return <NavLink to={name} >
-    <IconComponent rounded small hoverable active={isActive} logo={logoForMetricName()} />
+  return <NavLink to={name}>
+    <IconComponent rounded small hoverable active={isActive} activeBorder logo={logoForMetricName()} />
     <div className={`text-base md:text-sm w-28 md:w-16 ${!isActive && 'opacity-40'}`}>
       <div className="text-ellipsis overflow-hidden">{name}</div>
       <div className="text-sm md:text-xs font-medium text-slate-700">{value} Met</div>
