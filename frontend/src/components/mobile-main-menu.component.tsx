@@ -13,11 +13,12 @@ export default function MobileMainMenuComponent({ hives, className }: Props) {
   }
 
   const shouldShowHives = !location.pathname.includes('hives')
+  const shouldShowBackButton = location.pathname !== '/'
 
   return <header className={`relative ${className}`}>
-    <button className="absolute bottom-4 hover:opacity-60" onClick={goBack}>
+    {shouldShowBackButton && <button className="absolute bottom-4 hover:opacity-60" onClick={goBack}>
       <img src={back_icon} className="w-10 h-10" alt="go back" />
-    </button>
+    </button>}
 
     <Link to='/' className="w-full hover:opacity-60">
       <img src={website_logo} className="w-20 h-20 m-auto" alt="logo" />
