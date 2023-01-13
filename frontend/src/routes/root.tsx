@@ -15,7 +15,7 @@ export default function Root() {
     <ViewportContext.Provider value={{ isMobile }}>
       {!isMobile && <Suspense fallback={<div>Loading...</div>}>
         <DesktopLeftMenuComponent className="col-span-2" hives={hives} />
-        <div className="md:col-start-3 md:col-end-6 lg:col-end-8 xl:col-end-12">
+        <div className="md:col-start-3 md:col-end-7 lg:col-end-9 xl:col-end-13">
           <Outlet />
         </div>
       </Suspense>}
