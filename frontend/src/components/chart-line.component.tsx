@@ -7,7 +7,7 @@ export const defaultOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: { position: 'bottom' as const },
+    legend: { position: 'top' as const },
   },
 }
 
