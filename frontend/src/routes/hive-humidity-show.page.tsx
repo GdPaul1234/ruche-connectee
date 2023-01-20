@@ -2,7 +2,7 @@ import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom"
 
 import { ChartLineComponent } from "../components/chart-line.component"
 import { apiSensorResponseToChartData } from "../services/chart.service"
-import { getHiveTemperature, TemperatureHumidityResponse } from "../services/hive.service"
+import { getHiveHumidity, TemperatureHumidityResponse } from "../services/hive.service"
 import { useState } from "react"
 
 
@@ -18,10 +18,10 @@ export async function loader({ request, params }: LoaderArgs) {
   const start = url.searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)
   const stop = url.searchParams.get('end') || Date.now()
 
-  if (params.hiveId) return getHiveTemperature(+params.hiveId, +start, +stop)
+  if (params.hiveId) return getHiveHumidity(+params.hiveId, +start, +stop)
 }
 
-export default function HiveTemperaturePage() {
+export default function HiveHumidityPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const temperatures = useLoaderData() as TemperatureHumidityResponse
   const temperatureData = apiSensorResponseToChartData(temperatures)

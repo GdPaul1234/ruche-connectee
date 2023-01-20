@@ -16,10 +16,20 @@ function Button(props: React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLBu
   return <button {...props} className={`${props.className} rounded-md hover:bg-gray-400 bg-gray-200 p-2`} />
 }
 
-export function DateRangeSelectorComponent({ state, setState }: DateRangePropsSelector) {
+export function DateRangeSelectorComponent({ state: propState, setState: propSetState }: DateRangePropsSelector) {
   const [isOpen, setIsOpen] = useState(false)
+  const [state, setState] = useState(propState)
 
   const { isMobile } = useContext(ViewportContext)
+
+  function onSelectionChange(newState: typeof state) {
+    setState(newState)
+  }
+
+  function handleValidate() {
+    propSetState(state)
+    setIsOpen(false)
+  }
 
   return <>
     <div className="flex justify-center">
@@ -36,20 +46,20 @@ export function DateRangeSelectorComponent({ state, setState }: DateRangePropsSe
           <Dialog.Panel className='mx-auto p-4 rounded-xl drop-shadow-xl bg-white'>
             <Dialog.Title className='mb-4 text-xl'>Sélection de la période</Dialog.Title>
             {!isMobile && <DateRangePicker
-              onChange={item => setState([item.selection])}
+              onChange={item => onSelectionChange([item.selection])}
               moveRangeOnFirstSelection={false}
               months={2}
               ranges={state}
               direction={'horizontal'}
             />}
             {isMobile && <DateRange
-              onChange={item => setState([item.selection])}
+              onChange={item => onSelectionChange([item.selection])}
               moveRangeOnFirstSelection={false}
               ranges={state}
             />}
 
             <div className="flex w-full justify-center">
-              <Button onClick={() => setIsOpen(false)}>Valider</Button>
+              <Button onClick={handleValidate}>Valider</Button>
             </div>
           </Dialog.Panel>
         </div>
