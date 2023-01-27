@@ -1,11 +1,10 @@
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom"
-
-import { useState } from "react"
-import { DateRangePropsSelector, DateRangeSelectorComponent } from "../components/date-range-selector.component"
+import { DateRangeSelectorComponent } from "../components/date-range-selector.component"
 
 import { ChartLineComponent } from "../components/chart-line.component"
 import { apiSensorResponseToChartData } from "../services/chart.service"
 import { getHiveTemperature, TemperatureHumidityResponse } from "../services/hive.service"
+import { initDateRangeState, useNavigateOnDateRange } from "../hooks/date-range.hook"
 
 type LoaderArgs = {
   request: Request
@@ -21,30 +20,18 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export default function HiveTemperaturePage() {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const temperatures = useLoaderData() as TemperatureHumidityResponse
   const temperatureData = apiSensorResponseToChartData(temperatures)
 
   const navigate = useNavigate()
 
-  const [state, setState] = useState<DateRangePropsSelector['state']>([
-    {
-      startDate: new Date(searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)),
-      endDate: new Date(searchParams.get('end') || Date.now()),
-      key: 'selection'
-    }
-  ])
+  const state = initDateRangeState({
+    start: new Date(searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)),
+    end: new Date(searchParams.get('end') || Date.now())
+  })
 
-  function onDateRangeChange(newState: typeof state) {
-    const params = {
-      start: newState[0].startDate!.getTime().toFixed(),
-      stop: newState[0].endDate!.getTime().toFixed()
-    } as const
-
-    setSearchParams(params)
-    setState(newState)
-    navigate(`?${searchParams.toString()}`)
-  }
+  const onDateRangeChange = useNavigateOnDateRange(state, navigate)
 
   return <article className="w-full">
     <DateRangeSelectorComponent state={state} setState={newState => onDateRangeChange(newState)} />
