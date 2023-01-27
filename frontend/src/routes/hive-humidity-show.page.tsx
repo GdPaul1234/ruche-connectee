@@ -1,12 +1,11 @@
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom"
 
+import { useState } from "react"
+import { DateRangePropsSelector, DateRangeSelectorComponent } from "../components/date-range-selector.component"
+
 import { ChartLineComponent } from "../components/chart-line.component"
 import { apiSensorResponseToChartData } from "../services/chart.service"
 import { getHiveHumidity, TemperatureHumidityResponse } from "../services/hive.service"
-import { useState } from "react"
-
-
-import { DateRangePropsSelector, DateRangeSelectorComponent } from "../components/date-range-selector.component"
 
 type LoaderArgs = {
   request: Request
