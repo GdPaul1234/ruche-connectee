@@ -66,6 +66,4 @@ export function DateRangeSelectorComponent({ state: propState, setState: propSet
       </Dialog>
     </Transition>
   </>
-
-
 }
