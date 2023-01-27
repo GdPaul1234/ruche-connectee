@@ -1,14 +1,14 @@
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Filler, Title, Tooltip, Legend } from 'chart.js'
 import { ChartProps, Line } from 'react-chartjs-2'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Title, Tooltip, Legend)
 
 export const defaultOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: { position: 'top' as const },
-  },
+  }
 }
 
 export function ChartLineComponent({ options = defaultOptions, data }: {
