@@ -7,10 +7,10 @@ import './index.css'
 import Root from './routes/root'
 import HivePage, { loader as hiveLoader } from './routes/hive-show.page'
 import HivePageIndex from './routes/hive-index.page'
-import HiveTemperaturePage, { loader as hiveTemperatureLoader } from './routes/hive-temperature-show.page'
-import HiveHumidityPage, { loader as hiveHumidityLoader } from './routes/hive-humidity-show.page'
-import HiveWeightPage, { loader as hiveWeightLoader } from './routes/hive-weight-show-page'
-import HiveBatteryPage, { loader as hiveBatteryLoader } from './routes/hive-battery-show-page'
+import { HiveTemperaturePage, loader as hiveTemperatureLoader } from './routes/hive-temperature-show.page'
+import { HiveHumidityPage, loader as hiveHumidityLoader } from './routes/hive-humidity-show.page'
+import { HiveWeightPage, loader as hiveWeightLoader } from './routes/hive-weight-show-page'
+import { HiveBatteryPage, loader as hiveBatteryLoader } from './routes/hive-battery-show-page'
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

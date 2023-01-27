@@ -11,7 +11,7 @@ export const defaultOptions = {
   }
 }
 
-export function ChartLineComponent({ options = defaultOptions, data }: {
+export default function ChartLineComponent({ options = defaultOptions, data }: {
   options?: ChartProps<'line'>['options']
   data: ChartProps<'line'>['data']
 }) {
