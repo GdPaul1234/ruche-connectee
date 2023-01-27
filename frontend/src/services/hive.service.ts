@@ -59,3 +59,13 @@ export function getHiveWeight(hiveId: number, start: number, stop: number): Prom
     weight: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) })),
   })
 }
+
+export type BatteryResponse = Record<'battery', { updatedAt: string, value: number }[]>
+
+export function getBatteryResponse(hiveId: number, start: number, stop: number): Promise<BatteryResponse> {
+  const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
+
+  return Promise.resolve({
+    battery: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) })),
+  })
+}
