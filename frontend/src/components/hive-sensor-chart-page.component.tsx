@@ -4,6 +4,7 @@ import { DateRangeSelectorComponent } from "../components/date-range-selector.co
 import { ApiSensorResponse, apiSensorResponseToChartData } from "../services/chart.service"
 import { initDateRangeState, useNavigateOnDateRange } from "../hooks/date-range.hook"
 import { lazy } from "react"
+import { ChartProps } from "react-chartjs-2"
 
 export type SensorLoaderArgs = {
   request: Request
@@ -21,9 +22,11 @@ export async function sensorLoader(fetcher: LoaderFetcher, { request, params }: 
 }
 
 const ChartLine = lazy(() => import("./chart-line.component"))
+const ChartBar = lazy(() => import("./chart-bar.component"))
 
-export function HiveBaseSensorPage({ chartType }: {
-  chartType: 'line'
+export function HiveBaseSensorPage({ chartType, children }: {
+  chartType: 'line' | 'bar'
+  children?: React.ReactNode
 }) {
   const [searchParams] = useSearchParams()
   const sensorRawValues = useLoaderData() as ApiSensorResponse
@@ -41,6 +44,9 @@ export function HiveBaseSensorPage({ chartType }: {
   return <article className="w-full">
     <DateRangeSelectorComponent state={state} setState={newState => onDateRangeChange(newState)} />
 
-    {chartType === 'line' && <ChartLine data={sensorChartData} />}
+    {chartType === 'line' && <ChartLine data={sensorChartData as ChartProps<'line'>['data']} />}
+    {chartType === 'bar' && <ChartBar data={sensorChartData as ChartProps<'bar'>['data']} />}
+
+    {children}
   </article>
 }

@@ -2,7 +2,7 @@ import { ChartProps } from "react-chartjs-2"
 import { formatDate } from "./date.service"
 
 export type ApiSensorResponse = Record<string, { updatedAt: string, value: number }[]>
-type ChartData = ChartProps<'line'>['data']
+type ChartData = ChartProps<'line'>['data'] | ChartProps<'bar'>['data']
 
 const borderColors = ['#da7e4b', '#868b91']
 const backgroundColors = ['rgba(225, 185, 134, 0.1)', 'rgba(136, 174, 236, 0.1)']
