@@ -69,3 +69,30 @@ export function getBatteryResponse(hiveId: number, start: number, stop: number):
     battery: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) })),
   })
 }
+
+export type AlertResponse = Record<'alert', {
+  updatedAt: string
+  value: number
+  messages: {
+    type: string
+    message: string
+  }[]
+}[]>
+
+export function getAlertResponse(hiveId: number, start: number, stop: number): Promise<AlertResponse> {
+  const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
+
+  return Promise.resolve({
+    alert: days.map(day => {
+      const nbMessage = faker.datatype.number({ min: 0, max: 5 })
+      return {
+        updatedAt: day,
+        type: 'info',
+        value: nbMessage,
+        messages: Array.from(
+          { length: nbMessage },
+          () => ({ type: 'info', message: faker.hacker.phrase() }))
+      }
+    }),
+  })
+}

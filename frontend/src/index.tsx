@@ -11,6 +11,7 @@ import { HiveTemperaturePage, loader as hiveTemperatureLoader } from './routes/h
 import { HiveHumidityPage, loader as hiveHumidityLoader } from './routes/hive-humidity-show.page'
 import { HiveWeightPage, loader as hiveWeightLoader } from './routes/hive-weight-show-page'
 import { HiveBatteryPage, loader as hiveBatteryLoader } from './routes/hive-battery-show-page'
+import { HiveAlertPage, loader as hiveAlertLoader } from './routes/hive-alert-show-page'
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
           { path: 'humidity', element: <HiveHumidityPage />, loader: hiveHumidityLoader },
           { path: 'weight', element: <HiveWeightPage />, loader: hiveWeightLoader },
           { path: 'battery', element: <HiveBatteryPage />, loader: hiveBatteryLoader },
-          { path: 'alert', element: <div>Alert</div> },
+          { path: 'alert', element: <HiveAlertPage />, loader: hiveAlertLoader },
           { path: '*', element: <div>Alert</div>, index: true }
         ]
       }
