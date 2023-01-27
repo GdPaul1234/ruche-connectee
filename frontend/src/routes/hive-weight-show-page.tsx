@@ -5,7 +5,7 @@ import { DateRangePropsSelector, DateRangeSelectorComponent } from "../component
 
 import { ChartLineComponent } from "../components/chart-line.component"
 import { apiSensorResponseToChartData } from "../services/chart.service"
-import { getHiveTemperature, TemperatureHumidityResponse } from "../services/hive.service"
+import { getHiveWeight, WeightResponse } from "../services/hive.service"
 
 type LoaderArgs = {
   request: Request
@@ -17,16 +17,15 @@ export async function loader({ request, params }: LoaderArgs) {
   const start = url.searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)
   const stop = url.searchParams.get('end') || Date.now()
 
-  if (params.hiveId) return getHiveTemperature(+params.hiveId, +start, +stop)
+  if (params.hiveId) return getHiveWeight(+params.hiveId, +start, +stop)
 }
 
-export default function HiveTemperaturePage() {
+export default function HiveWeightPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const temperatures = useLoaderData() as TemperatureHumidityResponse
-  const temperatureData = apiSensorResponseToChartData(temperatures)
+  const weights = useLoaderData() as WeightResponse
+  const weightData = apiSensorResponseToChartData(weights)
 
   const navigate = useNavigate()
-
   const [state, setState] = useState<DateRangePropsSelector['state']>([
     {
       startDate: new Date(searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)),
@@ -48,6 +47,6 @@ export default function HiveTemperaturePage() {
 
   return <article className="w-full">
     <DateRangeSelectorComponent state={state} setState={newState => onDateRangeChange(newState)} />
-    <ChartLineComponent data={temperatureData} />
+    <ChartLineComponent data={weightData} />
   </article>
 }

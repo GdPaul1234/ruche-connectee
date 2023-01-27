@@ -49,3 +49,13 @@ export function getHiveHumidity(hiveId: number, start: number, stop: number): Pr
     outdoor: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) }))
   })
 }
+
+export type WeightResponse = Record<'weight', { updatedAt: string, value: number }[]>
+
+export function getHiveWeight(hiveId: number, start: number, stop: number): Promise<WeightResponse> {
+  const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
+
+  return Promise.resolve({
+    weight: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) })),
+  })
+}
