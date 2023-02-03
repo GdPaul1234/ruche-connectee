@@ -15,7 +15,7 @@ export default function ChartLineComponent({ options = defaultOptions, data }: {
   options?: ChartProps<'line'>['options']
   data: ChartProps<'line'>['data']
 }) {
-  return <div className="relative h-96 lg:h-[500px] xl:h-[600px]">
+  return <div className="relative h-96 lg:h-[400px] 2xl:h-[500px]">
     <Line options={options} data={data} />
   </div>
 }

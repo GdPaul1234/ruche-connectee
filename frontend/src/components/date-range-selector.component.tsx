@@ -32,11 +32,9 @@ export function DateRangeSelectorComponent({ state: propState, setState: propSet
   }
 
   return <>
-    <div className="flex justify-center">
-      <Button className='' onClick={() => setIsOpen(true)}>
-        {[state[0].startDate, state[0].endDate].map(date => formatDate(date!)).join(' - ')}
-      </Button>
-    </div>
+    <Button className='' onClick={() => setIsOpen(true)}>
+      {[state[0].startDate, state[0].endDate].map(date => formatDate(date!)).join(' - ')}
+    </Button>
 
     <Transition appear show={isOpen} as={React.Fragment}>
       <Dialog as="div" className="relative z-10" open={isOpen} onClose={() => setIsOpen(false)}>
