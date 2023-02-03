@@ -12,8 +12,8 @@ import BatteryIcon from '../ressources/battery_icon.png'
 import IconComponent from './icon.component'
 
 function HiveMetric({ name, value }: {
-  name: keyof Hive['sensors_values']
-  value: number | string
+  name: keyof Hive['sensors']
+  value: { value: number | string, unit: string | null }
 }) {
   function logoForMetricName() {
     const logoFinder = {
@@ -34,14 +34,14 @@ function HiveMetric({ name, value }: {
     <IconComponent rounded small={!isMobile} hoverable active={isActive} activeBorder logo={logoForMetricName()} />
     <div className="text-base md:text-sm w-28 md:w-16">
       <div className="text-ellipsis overflow-hidden">{name}</div>
-      <div className="text-sm md:text-xs font-medium text-slate-700">{value} Met</div>
+      <div className="text-sm md:text-xs font-medium text-slate-700">{`${value.value} ${value.unit ?? ''}`}</div>
     </div>
   </NavLink>
 }
 
 export default function HiveMetricsComponent({ name, sensors }: {
   name: Hive['name']
-  sensors: Hive['sensors_values']
+  sensors: Hive['sensors']
 }) {
   const { isMobile } = useContext(ViewportContext)
   const gridColumn = isMobile ? 'grid-cols-2' : 'grid-flow-col'
@@ -50,8 +50,8 @@ export default function HiveMetricsComponent({ name, sensors }: {
     {isMobile && <h2 className='col-span-full text-xl text-yellow-500 font-semibold'>Gérer la ruche {name}</h2>}
     {Object.keys(sensors).map(key => <HiveMetric
       key={key}
-      name={key as keyof Hive['sensors_values']}
-      value={sensors[key as keyof Hive['sensors_values']]}
+      name={key as keyof Hive['sensors']}
+      value={sensors[key as keyof Hive['sensors']]}
     />)}
   </div>
 }

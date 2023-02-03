@@ -13,19 +13,19 @@ export const sensorTypeValues = Object.values(SensorType).filter(v => typeof v =
 export type Hive = {
   id: number
   name: string
-  sensors_values: Record<keyof typeof SensorType, number>
+  sensors: Record<keyof typeof SensorType, { value: number, unit: string | null }>
 }
 
 export function getHive(hiveId: number): Promise<Hive> {
   return Promise.resolve({
     id: hiveId,
     name: `${hiveId}`,
-    sensors_values: {
-      temperature: 15,
-      humidity: 70,
-      weight: 50,
-      battery: 75,
-      alert: 2
+    sensors: {
+      temperature: { value: 15, unit: '°C' },
+      humidity: { value: 70, unit: '%' },
+      weight: { value: 50, unit: 'kg' },
+      battery: { value: 20, unit: '%' },
+      alert: { value: 2, unit: null }
     }
   })
 }
