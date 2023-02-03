@@ -1,0 +1,21 @@
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Filler, Title, Tooltip, Legend } from 'chart.js'
+import { ChartProps, Line } from 'react-chartjs-2'
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Title, Tooltip, Legend)
+
+export const defaultOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'top' as const },
+  }
+}
+
+export default function ChartLineComponent({ options = defaultOptions, data }: {
+  options?: ChartProps<'line'>['options']
+  data: ChartProps<'line'>['data']
+}) {
+  return <div className="relative h-96 lg:h-[400px] 2xl:h-[500px]">
+    <Line options={options} data={data} />
+  </div>
+}
