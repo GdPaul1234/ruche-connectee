@@ -9,61 +9,93 @@ from apps.user.auth import User, get_current_active_user
 router = APIRouter()
 
 
-@router.post("/", response_description="Add new behive", response_model=BehiveOut)
-async def create_behive(*, current_user: User = Depends(get_current_active_user), request: Request, behive: CreateBehiveModel = Body(...)):
+def get_behives_db(request: Request):
+    return request.app.mongodb["behives"]
+
+
+@router.post("/", response_description="Add new behive", status_code=status.HTTP_201_CREATED, response_model=BehiveOut)
+async def create_behive(
+    *,
+    current_user: User = Depends(get_current_active_user),
+    behive: CreateBehiveModel = Body(...),
+    request: Request,
+):
+    behives_db = get_behives_db(request)
     mock_metrics = {k: { "value": "Not set", "unit": None } for k in ("temperature", "humidity", "weight", "battery", "alert" )}
     behive = jsonable_encoder(behive.dict() | {"owner_id": current_user.id, " metrics": mock_metrics})
 
-    new_behive = await request.app.mongodb["behives"].insert_one(behive)
-    created_behive = await request.app.mongodb["behives"].find_one({
-        "_id": new_behive.inserted_id
-    })
+    new_behive = await behives_db.insert_one(behive)
+    created_behive = await behives_db.find_one({"_id": new_behive.inserted_id})
 
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=to_behive_out(created_behive))
+    return to_behive_out(created_behive)
 
 
-@router.get("/", response_description="List all behives", response_model=list[BehiveOut])
-async def list_behives(*, current_user: User = Depends(get_current_active_user), request: Request):
+@router.get("/", response_description="List all your behives", response_model=list[BehiveOut])
+async def list_behives(
+    *,
+    current_user: User = Depends(get_current_active_user),
+    request: Request
+):
+    behives_db = get_behives_db(request)
     return [
         to_behive_out(doc)
-        for doc in await request.app.mongodb["behives"]
+        for doc in await behives_db
             .find({"owner_id": current_user.id})
             .to_list(length=100)
     ]
 
 
 @router.get("/{id}", response_description="Get a single behive", response_model=BehiveOut)
-async def show_behive(*, current_user: User = Depends(get_current_active_user), id: str, request: Request):
-    # TODO add auth middleware
-    if (behive := await request.app.mongodb["behives"].find_one({"_id": id, "owner_id": current_user.id})) is not None:
+async def show_behive(
+    *,
+    current_user: User = Depends(get_current_active_user),
+    request: Request,
+    id: str
+):
+    behives_db = get_behives_db(request)
+
+    if (behive := await behives_db.find_one({"_id": id, "owner_id": current_user.id})) is not None:
         return to_behive_out(behive)
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Behive {id} not found")
 
 
 @router.put("/{id}", response_description="Update a behive", response_model=BehiveOut)
-async def update_task(*, current_user: User = Depends(get_current_active_user), id: str, request: Request, behive: UpdateBehiveModel = Body(...)):
+async def update_behive(
+    *,
+    current_user: User = Depends(get_current_active_user),
+    request: Request,
+    id: str,
+    behive: UpdateBehiveModel = Body(...)
+):
     behive_update = {k: v for k, v in behive.dict().items() if v is not None}
+    behives_db = get_behives_db(request)
 
     if len(behive_update) >= 1:
-        update_result = await request.app.mongodb["behives"].update_one({"_id": id, "owner_id": current_user.id}, {"$set": behive_update})
+        update_result = await behives_db.update_one({"_id": id, "owner_id": current_user.id}, {"$set": behive_update})
 
         if update_result.modified_count == 1 and (
-            updated_behive := await request.app.mongodb["behives"].find_one({"_id": id, "owner_id": current_user.id})
+            updated_behive := await behives_db.find_one({"_id": id, "owner_id": current_user.id})
         ) is not None:
             return to_behive_out(updated_behive)
 
-    if (existing_behive := await request.app.mongodb["behives"].find_one({"_id": id, "owner_id": current_user.id})) is not None:
+    if (existing_behive := await behives_db.find_one({"_id": id, "owner_id": current_user.id})) is not None:
         return to_behive_out(existing_behive)
 
-    raise HTTPException(status_code=404, detail=f"Behive {id} not found")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Behive {id} not found")
 
 
-@router.delete("/{id}", response_description="Delete behive")
-async def delete_user(*, current_user: User = Depends(get_current_active_user), id: str, request: Request):
-    delete_result = await request.app.db["behives"].delete_one({"_id": id, "owner_id": current_user.id})
+@router.delete("/{id}", response_description="Delete behive", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_behive(
+    *,
+    current_user: User = Depends(get_current_active_user),
+    request: Request,
+    id: str
+):
+    behives_db = get_behives_db(request)
+    delete_result = await behives_db.delete_one({"_id": id, "owner_id": current_user.id})
 
     if delete_result.deleted_count == 1:
-        return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content={})
+        return {}
 
     raise HTTPException(status_code=404, detail=f"Behive {id} not found")
