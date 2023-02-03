@@ -21,7 +21,7 @@ export default function HivePage() {
   const shouldShowMetrics = !isMobile || !sensorTypeValues.some(sensor => location.pathname.includes(`/${sensor}`))
 
   return <div className="md:mt-7">
-    {shouldShowMetrics && <HiveMetricsComponent name={hive.name} sensors={hive.sensors_values} />}
+    {shouldShowMetrics && <HiveMetricsComponent name={hive.name} sensors={hive.sensors} />}
     <Outlet />
   </div>
 }
