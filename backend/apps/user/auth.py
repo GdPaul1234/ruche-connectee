@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 
 from config import settings
-from .models import UserInDB, User, TokenData
+from .models import UserInDB, User, TokenData, to_user_out
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -24,7 +24,7 @@ def get_password_hash(password):
 
 async def get_user(db, username: str):
     if (user := await db.find_one({"username": username})) is not None:
-        return UserInDB(**user)
+        return UserInDB(_id=str(user["_id"]), **{k: user[k] for k in set(user.keys()) - {"_id"}})
 
 
 async def authenticate_user(user_db, username: str, password: str):
@@ -66,7 +66,8 @@ async def get_current_user(request: Request, token: str = Depends(oauth2_scheme)
 
     if (user := await get_user(request.app.mongodb["users"], username=token_data.username)) is None:
         raise credentials_exception
-    return user
+    print("get_current_user", user)
+    return User(**user.dict())
 
 
 async def get_current_active_user(current_user: User = Depends(get_current_user)):

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
-from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 
 from .models import BehiveOut, CreateBehiveModel, UpdateBehiveModel, to_behive_out
