@@ -38,9 +38,14 @@ class User(BaseModel):
         }
 
 
-class UserInDB(User):
+class UserInDB(BaseModel):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
     hashed_password: str
+    username: str
+    email: str
+    firstname: str
+    lastname: str
+    disabled: bool | None = None
 
     class Config:
         allow_population_by_field_name = True

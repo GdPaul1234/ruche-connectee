@@ -40,4 +40,4 @@ async def delete_user(
     if delete_result.deleted_count == 1:
         return {}
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {id} not found")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {current_user.id} not found")
