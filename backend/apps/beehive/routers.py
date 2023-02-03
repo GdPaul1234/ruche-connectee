@@ -1,10 +1,11 @@
+import json
 from typing import Any
 from fastapi import APIRouter, Body, Request, HTTPException, status
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 
-from .models import BehiveModel, UpdateBehiveModel
+from .models import BehiveMetrics, CreateBehiveModel, UpdateBehiveModel
 
 router = APIRouter()
 
@@ -12,11 +13,13 @@ router = APIRouter()
 class BehiveOut(BaseModel):
     id: str
     name: str
+    last_metrics: BehiveMetrics
 
 
-@router.post("/", response_description="Add new behive")
-async def create_behive(request: Request, behive: BehiveModel = Body(...)):
-    behive = jsonable_encoder(behive)
+@router.post("/", response_description="Add new behive", response_model=BehiveOut)
+async def create_behive(request: Request, behive: CreateBehiveModel = Body(...)):
+    mock_metrics = {k: { "value": "Not set", "unit": None } for k in ("temperature", "humidity", "weight", "battery", "alert" )}
+    behive = jsonable_encoder(behive.dict() | {"metrics": mock_metrics})
     new_behive = await request.app.mongodb["behives"].insert_one(behive)
     created_behive = await request.app.mongodb["behives"].find_one({
         "_id": new_behive.inserted_id
@@ -31,10 +34,9 @@ async def list_behives(request: Request):
     return [to_behive_out(doc) for doc in await request.app.mongodb["behives"].find().to_list(length=100)]
 
 
-@router.get("/{id}", response_description="Get a single behive")
+@router.get("/{id}", response_description="Get a single behive", response_model=BehiveOut)
 async def show_behive(id: str, request: Request):
     # TODO add auth middleware
-    # TODO return behive metrics
     if (behive := await request.app.mongodb["behives"].find_one({"_id": id})) is not None:
         return to_behive_out(behive)
 
@@ -60,8 +62,11 @@ async def update_task(id: str, request: Request, behive: UpdateBehiveModel = Bod
     raise HTTPException(status_code=404, detail=f"Behive {id} not found")
 
 
-def to_behive_out(behive: Any) -> BehiveOut:
-    return BehiveOut(
-        id=behive["_id"],
-        name=behive["name"]
+def to_behive_out(behive: Any):
+    return jsonable_encoder(
+        BehiveOut(
+            id=str(behive["_id"]),
+            name=behive["name"],
+            last_metrics=behive["metrics"]
+        )
     )
