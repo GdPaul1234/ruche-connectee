@@ -66,7 +66,7 @@ async def get_current_user(request: Request, token: str = Depends(oauth2_scheme)
 
     if (user := await get_user(request.app.mongodb["users"], username=token_data.username)) is None:
         raise credentials_exception
-    print("get_current_user", user)
+
     return User(**user.dict())
 
 

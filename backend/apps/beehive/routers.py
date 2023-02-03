@@ -21,7 +21,7 @@ async def create_behive(
 ):
     behives_db = get_behives_db(request)
     mock_metrics = {k: { "value": "Not set", "unit": None } for k in ("temperature", "humidity", "weight", "battery", "alert" )}
-    behive = jsonable_encoder(behive.dict() | {"owner_id": current_user.id, " metrics": mock_metrics})
+    behive = jsonable_encoder(behive.dict() | {"owner_id": current_user.id, "last_metrics": mock_metrics})
 
     new_behive = await behives_db.insert_one(behive)
     created_behive = await behives_db.find_one({"_id": new_behive.inserted_id})
