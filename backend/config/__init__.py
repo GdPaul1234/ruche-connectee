@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class CommonSettings(BaseSettings):
-    APP_NAME: str = "FARM Intro"
+    APP_NAME: str = "Super Hive - Hive"
     DEBUG_MODE: bool = False
 
 

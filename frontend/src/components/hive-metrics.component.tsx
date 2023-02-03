@@ -12,7 +12,7 @@ import BatteryIcon from '../ressources/battery_icon.png'
 import IconComponent from './icon.component'
 
 function HiveMetric({ name, value }: {
-  name: keyof Hive['sensors']
+  name: keyof Hive['last_metrics']
   value: { value: number | string, unit: string | null }
 }) {
   function logoForMetricName() {
@@ -41,7 +41,7 @@ function HiveMetric({ name, value }: {
 
 export default function HiveMetricsComponent({ name, sensors }: {
   name: Hive['name']
-  sensors: Hive['sensors']
+  sensors: Hive['last_metrics']
 }) {
   const { isMobile } = useContext(ViewportContext)
   const gridColumn = isMobile ? 'grid-cols-2' : 'grid-flow-col'
@@ -50,8 +50,8 @@ export default function HiveMetricsComponent({ name, sensors }: {
     {isMobile && <h2 className='col-span-full text-xl text-yellow-500 font-semibold'>Gérer la ruche {name}</h2>}
     {Object.keys(sensors).map(key => <HiveMetric
       key={key}
-      name={key as keyof Hive['sensors']}
-      value={sensors[key as keyof Hive['sensors']]}
+      name={key as keyof Hive['last_metrics']}
+      value={sensors[key as keyof Hive['last_metrics']]}
     />)}
   </div>
 }
