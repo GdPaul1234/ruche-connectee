@@ -5,9 +5,13 @@ export type ApiSensorResponse = Record<string, { updatedAt: string, value: numbe
 type ChartData = ChartProps<'line'>['data'] | ChartProps<'bar'>['data']
 
 const borderColors = ['#da7e4b', '#868b91']
-const backgroundColors = ['rgba(225, 185, 134, 0.1)', 'rgba(136, 174, 236, 0.1)']
+const backgroundOpacity = (chartType: 'line' | 'bar') => chartType === 'bar' ? 1 : 0.1
+const backgroundColors = (chartType: 'line' | 'bar') => [
+  `rgba(225, 185, 134, ${backgroundOpacity(chartType)})`,
+  `rgba(136, 174, 236, ${backgroundOpacity(chartType)})`
+]
 
-export function apiSensorResponseToChartData(apiResponse: ApiSensorResponse): ChartData {
+export function apiSensorResponseToChartData(chartType: 'line' | 'bar', apiResponse: ApiSensorResponse): ChartData {
   const keys = Object.keys(apiResponse)
 
   return {
@@ -16,7 +20,8 @@ export function apiSensorResponseToChartData(apiResponse: ApiSensorResponse): Ch
       label,
       data: apiResponse[label].map(data => data.value),
       borderColor: borderColors[i],
-      backgroundColor: backgroundColors[i],
+      backgroundColor: backgroundColors(chartType)[i],
+      lineTension: 0.2, // smooth graph
       fill: true
     }))
   }

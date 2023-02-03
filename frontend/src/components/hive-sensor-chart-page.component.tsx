@@ -11,26 +11,26 @@ export type SensorLoaderArgs = {
   params: Partial<Record<'hiveId', string>>
 }
 
-type LoaderFetcher = (hiveId: number, start: number, stop: number) => unknown
+type LoaderFetcher = (hiveId: string, start: number, stop: number) => unknown
 
 export async function sensorLoader(fetcher: LoaderFetcher, { request, params }: SensorLoaderArgs) {
   const url = new URL(request.url)
   const start = url.searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)
   const stop = url.searchParams.get('end') || Date.now()
 
-  if (params.hiveId) return fetcher(+params.hiveId, +start, +stop)
+  if (params.hiveId) return fetcher(params.hiveId, +start, +stop)
 }
 
 const ChartLine = lazy(() => import("./chart-line.component"))
 const ChartBar = lazy(() => import("./chart-bar.component"))
 
-export function HiveBaseSensorPage({ chartType, children }: {
+export function HiveBaseSensorPage({ chartType, footerChildren }: {
   chartType: 'line' | 'bar'
-  children?: React.ReactNode
+  footerChildren?: (sensorResponse: ApiSensorResponse) => React.ReactNode
 }) {
   const [searchParams] = useSearchParams()
   const sensorRawValues = useLoaderData() as ApiSensorResponse
-  const sensorChartData = apiSensorResponseToChartData(sensorRawValues)
+  const sensorChartData = apiSensorResponseToChartData(chartType, sensorRawValues)
 
   const navigate = useNavigate()
 
@@ -41,12 +41,18 @@ export function HiveBaseSensorPage({ chartType, children }: {
 
   const onDateRangeChange = useNavigateOnDateRange(state, navigate)
 
-  return <article className="w-full">
-    <DateRangeSelectorComponent state={state} setState={newState => onDateRangeChange(newState)} />
+  return <article className="w-full mt-1">
+    <section className="flex justify-center pt-2 pb-4 bg-white rounded-b-lg sticky top-0 z-50">
+      <DateRangeSelectorComponent state={state} setState={newState => onDateRangeChange(newState)} />
+    </section>
 
-    {chartType === 'line' && <ChartLine data={sensorChartData as ChartProps<'line'>['data']} />}
-    {chartType === 'bar' && <ChartBar data={sensorChartData as ChartProps<'bar'>['data']} />}
+    <section>
+      {chartType === 'line' && <ChartLine data={sensorChartData as ChartProps<'line'>['data']} />}
+      {chartType === 'bar' && <ChartBar data={sensorChartData as ChartProps<'bar'>['data']} />}
+    </section>
 
-    {children}
+    <section className="mt-4">
+      {footerChildren && footerChildren(sensorRawValues)}
+    </section>
   </article>
 }

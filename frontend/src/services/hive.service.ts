@@ -32,7 +32,7 @@ export function getHive(hiveId: number): Promise<Hive> {
 
 export type TemperatureHumidityResponse = Record<'indoor' | 'outdoor', { updatedAt: string, value: number }[]>
 
-export function getHiveTemperature(hiveId: number, start: number, stop: number): Promise<TemperatureHumidityResponse> {
+export function getHiveTemperature(hiveId: string, start: number, stop: number): Promise<TemperatureHumidityResponse> {
   const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
 
   return Promise.resolve({
@@ -41,7 +41,7 @@ export function getHiveTemperature(hiveId: number, start: number, stop: number):
   })
 }
 
-export function getHiveHumidity(hiveId: number, start: number, stop: number): Promise<TemperatureHumidityResponse> {
+export function getHiveHumidity(hiveId: string, start: number, stop: number): Promise<TemperatureHumidityResponse> {
   const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
 
   return Promise.resolve({
@@ -52,7 +52,7 @@ export function getHiveHumidity(hiveId: number, start: number, stop: number): Pr
 
 export type WeightResponse = Record<'weight', { updatedAt: string, value: number }[]>
 
-export function getHiveWeight(hiveId: number, start: number, stop: number): Promise<WeightResponse> {
+export function getHiveWeight(hiveId: string, start: number, stop: number): Promise<WeightResponse> {
   const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
 
   return Promise.resolve({
@@ -62,7 +62,7 @@ export function getHiveWeight(hiveId: number, start: number, stop: number): Prom
 
 export type BatteryResponse = Record<'battery', { updatedAt: string, value: number }[]>
 
-export function getBatteryResponse(hiveId: number, start: number, stop: number): Promise<BatteryResponse> {
+export function getBatteryResponse(hiveId: string, start: number, stop: number): Promise<BatteryResponse> {
   const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
 
   return Promise.resolve({
@@ -75,11 +75,12 @@ export type AlertResponse = Record<'alert', {
   value: number
   messages: {
     type: string
+    updatedAt: string
     message: string
   }[]
 }[]>
 
-export function getAlertResponse(hiveId: number, start: number, stop: number): Promise<AlertResponse> {
+export function getAlertResponse(hiveId: string, start: number, stop: number): Promise<AlertResponse> {
   const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
 
   return Promise.resolve({
@@ -87,11 +88,15 @@ export function getAlertResponse(hiveId: number, start: number, stop: number): P
       const nbMessage = faker.datatype.number({ min: 0, max: 5 })
       return {
         updatedAt: day,
-        type: 'info',
         value: nbMessage,
         messages: Array.from(
           { length: nbMessage },
-          () => ({ type: 'info', message: faker.hacker.phrase() }))
+          (_, i) => ({
+            type: 'info',
+            updatedAt: new Date(new Date(day).getTime() + i * 2 * 3600 * 1000).toISOString(),
+            message: faker.hacker.phrase()
+          })
+        )
       }
     }),
   })
