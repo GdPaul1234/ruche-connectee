@@ -18,6 +18,8 @@ python-multipart = "^0.0.5"
 
 # JWT & Auth
 fastapi-users = {extras = ["mongodb"], version = "^10.3.0"}
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 
 # Database
 motor = "^3.1.1"

@@ -19,7 +19,13 @@ class DatabaseSettings(BaseSettings):
     DB_NAME: str
 
 
-class Settings(CommonSettings, ServerSettings, DatabaseSettings):
+class AuthSettings(BaseSettings):
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+
+
+class Settings(CommonSettings, ServerSettings, DatabaseSettings, AuthSettings):
     pass
 
 
