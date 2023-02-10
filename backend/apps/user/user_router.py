@@ -11,6 +11,10 @@ def get_users_db(request: Request):
     return request.app.mongodb["users"]
 
 
+def get_mongo_db_client(request: Request):
+    return request.app.mongodb_client
+
+
 @router.get("/users/me/", response_description="Get user personnal informations", response_model=User)
 async def read_users_me(*, current_user: User = Depends(get_current_active_user)):
     return current_user
@@ -18,13 +22,17 @@ async def read_users_me(*, current_user: User = Depends(get_current_active_user)
 
 @router.post("/users", response_description="Create new user", status_code=status.HTTP_201_CREATED, response_model=User)
 async def create_user(
+    *,
     users_db = Depends(get_users_db),
-    user: CreateUserModel = Body(...)
+    user: CreateUserModel = Body(...),
+    request: Request
 ):
     user = jsonable_encoder(user.dict(exclude={"password"}) | { "hashed_password": get_password_hash(user.password) })
 
-    new_user = await users_db.insert_one(user)
-    created_user = await users_db.find_one({"_id": new_user.inserted_id})
+    async with await get_mongo_db_client(request).start_session() as s:
+        async with s.start_transaction():
+            new_user = await users_db.insert_one(user, session=s)
+            created_user = await users_db.find_one({"_id": new_user.inserted_id}, session=s)
 
     return to_user_out(created_user)
 
