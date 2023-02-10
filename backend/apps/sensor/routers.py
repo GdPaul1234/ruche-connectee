@@ -1,6 +1,5 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import cast
-from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 
@@ -29,6 +28,8 @@ async def create_sensor_record(
     request: Request
 ):
     sensors_db = get_sensors_db(request)
+
+     # TODO: extract user id from behive_id, if not equal, raise 401
     sensor_record = jsonable_encoder(sensor_record.dict() | {"owner_id": current_user.id})
 
     async with await get_mongo_db_client(request).start_session() as s:
@@ -68,7 +69,7 @@ async def list_sensor_records_by_type(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inconsistent date range")
 
     async for doc in sensors_db.aggregate([
-        {"$match": {"type": sensor_type, "behive_id": behive_id,"owner_id": current_user.id}},
+        {"$match": {"type": sensor_type, "behive_id": behive_id, "owner_id": current_user.id}},
         {
             "$project": {
                 "_id": 1,
