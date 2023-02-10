@@ -42,7 +42,7 @@ export function HiveBaseSensorPage({ chartType, footerChildren }: {
   const onDateRangeChange = useNavigateOnDateRange(state, navigate)
 
   return <article className="w-full mt-1">
-    <section className="flex justify-center pt-2 pb-4 bg-white rounded-b-lg sticky top-0 z-50">
+    <section className="flex justify-center pt-2 pb-4 bg-white rounded-b-lg sticky top-0 z-10">
       <DateRangeSelectorComponent state={state} setState={newState => onDateRangeChange(newState)} />
     </section>
 

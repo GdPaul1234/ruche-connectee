@@ -37,7 +37,7 @@ export function DateRangeSelectorComponent({ state: propState, setState: propSet
     </Button>
 
     <Transition appear show={isOpen} as={React.Fragment}>
-      <Dialog as="div" className="relative z-10" open={isOpen} onClose={() => setIsOpen(false)}>
+      <Dialog as="div" className="relative z-50" open={isOpen} onClose={() => setIsOpen(false)}>
         <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
 
         <div className="fixed inset-0 flex items-center justify-center p-4">
