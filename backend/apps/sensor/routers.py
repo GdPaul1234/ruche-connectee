@@ -33,9 +33,11 @@ async def create_sensor_record(
 
     async with await get_mongo_db_client(request).start_session() as s:
         async with s.start_transaction():
-            update_result = await sensors_db.update_one({"type": sensor_type, "behive_id": behive_id, "owner_id": current_user.id}, {
-                "$push": {"values": sensor_record}
-            }, session=s)
+            update_result = await sensors_db.update_one(
+                {"type": sensor_type, "behive_id": behive_id, "owner_id": current_user.id},
+                {"$push": {"values": sensor_record}},
+                session=s
+            )
 
             serialized_updated_at = datetime.fromisoformat(cast(dict, sensor_record)["updated_at"]).astimezone(timezone.utc).isoformat()
 
