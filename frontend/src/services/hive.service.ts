@@ -71,12 +71,12 @@ export function getBatteryResponse(hiveId: string, start: number, stop: number):
 }
 
 export type AlertResponse = Record<'alert', {
-  updatedAt: string
+  day: string
   value: number
   messages: {
     type: string
     updatedAt: string
-    message: string
+    content: string
   }[]
 }[]>
 
@@ -87,14 +87,14 @@ export function getAlertResponse(hiveId: string, start: number, stop: number): P
     alert: days.map(day => {
       const nbMessage = faker.datatype.number({ min: 0, max: 5 })
       return {
-        updatedAt: day,
+        day,
         value: nbMessage,
         messages: Array.from(
           { length: nbMessage },
           (_, i) => ({
             type: 'info',
             updatedAt: new Date(new Date(day).getTime() + i * 2 * 3600 * 1000).toISOString(),
-            message: faker.hacker.phrase()
+            content: faker.hacker.phrase()
           })
         )
       }
