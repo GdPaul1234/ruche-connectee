@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 
 from config import settings
-from .models import UserInDB, User, TokenData, to_user_out
+from .models import UserInDB, User, TokenData
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

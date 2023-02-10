@@ -24,7 +24,7 @@ class BehiveMetrics:
 class BehiveModel(BaseModel):
     id: str = Field(default_factory=uuid.uuid4, alias="_id")
     owner_id: str
-    name: str = Field(...)
+    name: str
     last_metrics: BehiveMetrics
 
     class Config:
