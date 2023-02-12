@@ -14,6 +14,10 @@ def get_events_db(request: Request):
     return request.app.mongodb["events"]
 
 
+def get_behive_db(request: Request):
+    return request.app.mongodb["behives"]
+
+
 def get_mongo_db_client(request: Request):
     return request.app.mongodb_client
 
@@ -27,7 +31,9 @@ async def create_event_record(
 ):
     events_db = get_events_db(request)
 
-    # TODO: extract user id from behive_id, if not equal, raise 401
+    if await get_behive_db(request).find_one({ "_id": event_record.behive_id }, { "owner_id": 1 }) != current_user.id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
     event_record = jsonable_encoder(event_record.dict() | {"owner_id": current_user.id})
 
     async with await get_mongo_db_client(request).start_session() as s:
