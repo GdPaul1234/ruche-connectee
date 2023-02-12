@@ -14,6 +14,10 @@ def get_sensors_db(request: Request):
     return request.app.mongodb["sensors"]
 
 
+def get_behive_db(request: Request):
+    return request.app.mongodb["behives"]
+
+
 def get_mongo_db_client(request: Request):
     return request.app.mongodb_client
 
@@ -29,7 +33,9 @@ async def create_sensor_record(
 ):
     sensors_db = get_sensors_db(request)
 
-     # TODO: extract user id from behive_id, if not equal, raise 401
+    if await get_behive_db(request).find_one({ "_id": behive_id }, { "owner_id": 1 }) != current_user.id:
+         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+
     sensor_record = jsonable_encoder(sensor_record.dict() | {"owner_id": current_user.id})
 
     async with await get_mongo_db_client(request).start_session() as s:
