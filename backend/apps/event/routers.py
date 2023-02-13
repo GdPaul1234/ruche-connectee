@@ -32,7 +32,7 @@ async def create_event_record(
     events_db = get_events_db(request)
 
     if await get_behive_db(request).find_one({ "_id": event_record.behive_id }, { "owner_id": 1 }) != current_user.id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     event_record = jsonable_encoder(event_record.dict() | {"owner_id": current_user.id})
 

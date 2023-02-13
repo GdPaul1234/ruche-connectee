@@ -34,7 +34,7 @@ async def create_sensor_record(
     sensors_db = get_sensors_db(request)
 
     if await get_behive_db(request).find_one({ "_id": behive_id }, { "owner_id": 1 }) != current_user.id:
-         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
     sensor_record = jsonable_encoder(sensor_record.dict() | {"owner_id": current_user.id})
 

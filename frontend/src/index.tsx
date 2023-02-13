@@ -13,32 +13,35 @@ import { HiveWeightPage, loader as hiveWeightLoader } from './routes/hive-weight
 import { HiveBatteryPage, loader as hiveBatteryLoader } from './routes/hive-battery-show-page'
 import { HiveAlertPage, loader as hiveAlertLoader } from './routes/hive-alert-show-page'
 
+import { OpenAPI } from './generated/core/OpenAPI'
+import LoginPage, { action as loginAction } from './routes/login-page'
+
+OpenAPI.BASE = 'http://localhost:8000' // TODO: set it in env variable
+OpenAPI.WITH_CREDENTIALS = true
+OpenAPI.CREDENTIALS = 'include'
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 )
 
 const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage />, action: loginAction, errorElement: <LoginPage /> },
   {
     path: '/',
     element: <Root />,
     children: [
+      { path: 'hives', element: <HivePageIndex /> },
       {
-        path: 'hives',
-        element: <HivePageIndex />
-      },
-      {
-        path: 'hives/:hiveId',
-        element: <HivePage />,
-        loader: hiveLoader,
+        path: 'hives/:hiveId', element: <HivePage />, loader: hiveLoader,
         children: [
           { path: 'temperature', element: <HiveTemperaturePage />, loader: hiveTemperatureLoader },
           { path: 'humidity', element: <HiveHumidityPage />, loader: hiveHumidityLoader },
           { path: 'weight', element: <HiveWeightPage />, loader: hiveWeightLoader },
           { path: 'battery', element: <HiveBatteryPage />, loader: hiveBatteryLoader },
           { path: 'alert', element: <HiveAlertPage />, loader: hiveAlertLoader },
-          { path: '*', element: <div>Alert</div>, index: true }
+          { path: '*', element: <HiveAlertPage />, loader: hiveAlertLoader, index: true }
         ]
-      }
+      },
     ]
   }
 ])

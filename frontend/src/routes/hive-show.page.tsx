@@ -5,7 +5,7 @@ import { ViewportContext } from "../components/contexts/viewport.context"
 import HiveMetricsComponent from "../components/hive-metrics.component"
 
 import { getHive, sensorTypeValues } from "../services/hive.service"
-import { BehiveOut } from "../../generated/models/BehiveOut"
+import { BehiveOut } from "../generated/models/BehiveOut"
 
 type LoaderArgs = {
   params: Partial<Record<'hiveId', string>>
