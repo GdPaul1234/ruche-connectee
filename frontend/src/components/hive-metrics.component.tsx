@@ -1,7 +1,6 @@
 import { useContext } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 
-import { Hive } from '../services/hive.service'
 import { ViewportContext } from './contexts/viewport.context'
 
 import HumidityIcon from '../ressources/humidity_icon.png'
@@ -11,8 +10,11 @@ import AlertIcon from '../ressources/alert_icon.png'
 import BatteryIcon from '../ressources/battery_icon.png'
 import IconComponent from './icon.component'
 
+import { BehiveOut } from '../../generated/models/BehiveOut'
+import { BehiveMetrics } from '../../generated/models/BehiveMetrics'
+
 function HiveMetric({ name, value }: {
-  name: keyof Hive['last_metrics']
+  name: keyof BehiveMetrics
   value: { value: number | string, unit: string | null }
 }) {
   function logoForMetricName() {
@@ -40,8 +42,8 @@ function HiveMetric({ name, value }: {
 }
 
 export default function HiveMetricsComponent({ name, sensors }: {
-  name: Hive['name']
-  sensors: Hive['last_metrics']
+  name: BehiveOut['name']
+  sensors: BehiveMetrics
 }) {
   const { isMobile } = useContext(ViewportContext)
   const gridColumn = isMobile ? 'grid-cols-2' : 'grid-flow-col'
@@ -50,8 +52,8 @@ export default function HiveMetricsComponent({ name, sensors }: {
     {isMobile && <h2 className='col-span-full text-xl text-yellow-500 font-semibold'>Gérer la ruche {name}</h2>}
     {Object.keys(sensors).map(key => <HiveMetric
       key={key}
-      name={key as keyof Hive['last_metrics']}
-      value={sensors[key as keyof Hive['last_metrics']]}
+      name={key as keyof BehiveMetrics}
+      value={sensors[key as keyof BehiveMetrics]}
     />)}
   </div>
 }

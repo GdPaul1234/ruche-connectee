@@ -33,7 +33,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "build-api-client": "curl -s -o openapi.json http://localhost:8000/openapi.json && openapi --input openapi.json --output ./generated"
+    "build-api-client": "curl -s -o openapi.json http://localhost:8000/openapi.json && openapi --input openapi.json --output ./generated --useOptions"
   },
   "eslintConfig": {
     "extends": [

@@ -1,19 +1,22 @@
 import { useContext } from "react"
 import { Outlet, useLoaderData, useLocation } from "react-router-dom"
+
 import { ViewportContext } from "../components/contexts/viewport.context"
 import HiveMetricsComponent from "../components/hive-metrics.component"
-import { getHive, Hive, sensorTypeValues } from "../services/hive.service"
+
+import { getHive, sensorTypeValues } from "../services/hive.service"
+import { BehiveOut } from "../../generated/models/BehiveOut"
 
 type LoaderArgs = {
   params: Partial<Record<'hiveId', string>>
 }
 
 export async function loader({ params }: LoaderArgs) {
-  if (params.hiveId) return getHive(+params.hiveId)
+  if (params.hiveId) return getHive(params.hiveId)
 }
 
 export default function HivePage() {
-  const hive = useLoaderData() as Hive
+  const hive = useLoaderData() as BehiveOut
 
   const location = useLocation()
   const { isMobile } = useContext(ViewportContext)

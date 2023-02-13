@@ -9,7 +9,7 @@ export const loader = (loaderArgs: SensorLoaderArgs) => sensorLoader(getAlertRes
 export function HiveAlertPage() {
   return <HiveBaseSensorPage
     chartType="bar"
-    footerChildren={rawValue => <HiveAlertFooter sensorRawValue={rawValue as AlertResponse} />} />
+    footerChildren={rawValue => <HiveAlertFooter sensorRawValue={rawValue as unknown as AlertResponse} />} />
 }
 
 function HiveAlertFooter({ sensorRawValue }: {
@@ -32,10 +32,10 @@ function HiveAlertFooter({ sensorRawValue }: {
               </Disclosure.Button>
               <Disclosure.Panel className="px-2 md:px-4 pt-4 pb-2">
                 <ul>
-                  {rawValue.messages.map(message => <li key={message.updatedAt} className="md:flex md:justify-between rounded-md bg-gray-50 p-2 mb-2">
+                  {rawValue.messages.map(message => <li key={message.updated_at} className="md:flex md:justify-between rounded-md bg-gray-50 p-2 mb-2">
                     <div className="font-semibold py-1">{message.type}</div>
                     <div className="py-1">{message.content}</div>
-                    <div className="font-light py-1">{formatDate(new Date(message.updatedAt), { timeStyle: 'short' })}</div>
+                    <div className="font-light py-1">{formatDate(new Date(message.updated_at), { timeStyle: 'short' })}</div>
                   </li>)}
                 </ul>
               </Disclosure.Panel>
