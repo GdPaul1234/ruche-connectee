@@ -10,8 +10,7 @@ import AlertIcon from '../ressources/alert_icon.png'
 import BatteryIcon from '../ressources/battery_icon.png'
 import IconComponent from './icon.component'
 
-import { BehiveOut } from '../generated/models/BehiveOut'
-import { BehiveMetrics } from '../generated/models/BehiveMetrics'
+import { BehiveOut, BehiveMetrics } from '../generated'
 
 function HiveMetric({ name, value }: {
   name: keyof BehiveMetrics

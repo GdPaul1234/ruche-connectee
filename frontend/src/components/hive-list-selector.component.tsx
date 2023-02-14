@@ -5,11 +5,9 @@ import { ViewportContext } from "./contexts/viewport.context"
 import IconComponent from "./icon.component"
 import logo from '../ressources/ruche.png'
 
-type Hive = {
-  id: number
-  name: string
-}
+import { BehiveOut } from "../generated"
 
+type Hive = Pick<BehiveOut, 'id' | 'name'>
 export interface Props {
   hives: Hive[]
   className?: string

@@ -1,11 +1,8 @@
-import { useState } from "react"
 import { Form, redirect, useRouteError } from "react-router-dom"
-import { ApiError } from "../generated"
+import { ApiError, OpenAPI } from "../generated"
 
 import website_logo from '../ressources/logo192.png'
 import { postLogin } from "../services/login.service"
-
-import { OpenAPI } from "../generated"
 
 export async function action({ request }: {
   request: Request

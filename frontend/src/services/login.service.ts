@@ -1,4 +1,4 @@
-import { TokensService } from '../generated/services/TokensService'
+import { TokensService } from '../generated'
 
 export async function postLogin(username: string, password: string) {
   return TokensService.loginForAccessTokenApiTokenPost({

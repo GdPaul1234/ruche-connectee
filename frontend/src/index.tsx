@@ -4,7 +4,7 @@ import reportWebVitals from './reportWebVitals'
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import './index.css'
 
-import Root from './routes/root'
+import Root, { loader as rootLoader } from './routes/root'
 import HivePage, { loader as hiveLoader } from './routes/hive-show.page'
 import HivePageIndex from './routes/hive-index.page'
 import { HiveTemperaturePage, loader as hiveTemperatureLoader } from './routes/hive-temperature-show.page'
@@ -27,8 +27,7 @@ const root = ReactDOM.createRoot(
 const router = createBrowserRouter([
   { path: '/login', element: <LoginPage />, action: loginAction, errorElement: <LoginPage /> },
   {
-    path: '/',
-    element: <Root />,
+    path: '/', element: <Root />, loader: rootLoader,
     children: [
       { path: 'hives', element: <HivePageIndex /> },
       {
@@ -39,7 +38,7 @@ const router = createBrowserRouter([
           { path: 'weight', element: <HiveWeightPage />, loader: hiveWeightLoader },
           { path: 'battery', element: <HiveBatteryPage />, loader: hiveBatteryLoader },
           { path: 'alert', element: <HiveAlertPage />, loader: hiveAlertLoader },
-          { path: '*', element: <HiveAlertPage />, loader: hiveAlertLoader, index: true }
+          { path: '*', element: <div>Sélectionner une rubrique pour commencer</div>, index: true }
         ]
       },
     ]

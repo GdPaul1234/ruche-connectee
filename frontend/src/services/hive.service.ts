@@ -1,11 +1,6 @@
 import { faker } from '@faker-js/faker'
 
-import { BehivesService } from '../generated/services/BehivesService'
-import { SensorsService } from '../generated/services/SensorsService'
-import { EventsService } from '../generated/services/EventsService'
-import { BehiveOut } from '../generated/models/BehiveOut'
-import { SensorOut } from '../generated/models/SensorOut'
-import { EventsOut } from '../generated/models/EventsOut'
+import { BehivesService, SensorsService, EventsService, SensorOut, EventsOut } from '../generated'
 
 enum SensorType {
   temperature,
@@ -17,7 +12,11 @@ enum SensorType {
 
 export const sensorTypeValues = Object.values(SensorType).filter(v => typeof v === 'string')
 
-export async function getHive(id: string): Promise<BehiveOut> {
+export async function getHives() {
+  return await BehivesService.listBehivesApiBehivesGet()
+}
+
+export async function getHive(id: string) {
   return await BehivesService.showBehiveApiBehivesIdGet({ id })
 }
 

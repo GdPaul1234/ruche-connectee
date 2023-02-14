@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
+from bson import ObjectId
 
 from .models import BehiveOut, CreateBehiveModel, UpdateBehiveModel, to_behive_out
 
@@ -59,8 +60,10 @@ async def show_behive(
 ):
     behives_db = get_behives_db(request)
 
-    if (behive := await behives_db.find_one({"_id": id, "owner_id": current_user.id})) is not None:
+    if (behive := await behives_db.find_one({"_id": ObjectId(id), "owner_id": current_user.id})) is not None:
         return to_behive_out(behive)
+
+    print(current_user.id)
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Behive {id} not found")
 
@@ -80,17 +83,17 @@ async def update_behive(
         async with s.start_transaction():
             if len(behive_update) >= 1:
                 update_result = await behives_db.update_one(
-                    {"_id": id, "owner_id": current_user.id},
+                    {"_id": ObjectId(id), "owner_id": current_user.id},
                     {"$set": behive_update},
                     session=s
                 )
 
                 if update_result.modified_count == 1 and (
-                    updated_behive := await behives_db.find_one({"_id": id, "owner_id": current_user.id}, session=s)
+                    updated_behive := await behives_db.find_one({"_id": ObjectId(id), "owner_id": current_user.id}, session=s)
                 ) is not None:
                     return to_behive_out(updated_behive)
 
-            if (existing_behive := await behives_db.find_one({"_id": id, "owner_id": current_user.id}, session=s)) is not None:
+            if (existing_behive := await behives_db.find_one({"_id": ObjectId(id), "owner_id": current_user.id}, session=s)) is not None:
                 return to_behive_out(existing_behive)
 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Behive {id} not found")
@@ -104,7 +107,7 @@ async def delete_behive(
     id: str
 ):
     behives_db = get_behives_db(request)
-    delete_result = await behives_db.delete_one({"_id": id, "owner_id": current_user.id})
+    delete_result = await behives_db.delete_one({"_id": ObjectId(id), "owner_id": current_user.id})
 
     if delete_result.deleted_count == 1:
         return {}

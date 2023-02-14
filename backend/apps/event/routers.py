@@ -62,8 +62,10 @@ async def list_events(
         "behive_id": behive_id,
         "owner_id": current_user.id,
         "updated_at": {
-            "$gte": from_date.astimezone(timezone.utc).isoformat(),
-            "$lt": to_date.astimezone(timezone.utc).isoformat()
+            "$and": [
+                {"$gte": from_date.astimezone(timezone.utc).isoformat()},
+                {"$lt": to_date.astimezone(timezone.utc).isoformat()}
+            ]
         }
     }).to_list(length=100)
 

@@ -35,8 +35,8 @@ export function HiveBaseSensorPage({ chartType, footerChildren }: {
   const navigate = useNavigate()
 
   const state = initDateRangeState({
-    start: new Date(searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)),
-    end: new Date(searchParams.get('end') || Date.now())
+    start: new Date(+(searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000))),
+    end: new Date(+(searchParams.get('end') || Date.now()))
   })
 
   const onDateRangeChange = useNavigateOnDateRange(state, navigate)
