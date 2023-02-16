@@ -1,7 +1,9 @@
 import { Form, redirect, useRouteError } from "react-router-dom"
+import ErrorBoxComponent from "../components/error-box.component"
 import { ApiError, OpenAPI } from "../generated"
 
 import website_logo from '../ressources/logo192.png'
+import { cookieSetValue } from "../services/cookie.service"
 import { postLogin } from "../services/login.service"
 
 export async function action({ request }: {
@@ -15,6 +17,8 @@ export async function action({ request }: {
   )
 
   OpenAPI.TOKEN = response.access_token
+  cookieSetValue('session', OpenAPI.TOKEN, { 'max-age': '1800', 'samesite': 'strict' })
+
   return redirect('/')
 }
 
@@ -30,10 +34,7 @@ export default function LoginPage() {
       <h1 className="text-2xl text-center m-[-8px]">Se connecter à votre compte Superhive</h1>
     </div>
 
-    {error && <div className="mt-8 p-2 bg-red-200 border-l border-red-700">
-      <h2 className="mb-2 text-xl text-red-500 font-semibold">{error.statusText}</h2>
-      <p className="text-red-900">{error.body.detail}</p>
-    </div>}
+    {error && <ErrorBoxComponent className="mt-8" error={error} />}
 
     <Form className="mt-8" method="post">
       <div>

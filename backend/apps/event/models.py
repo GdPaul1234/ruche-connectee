@@ -22,7 +22,7 @@ class EventOut(BaseModel):
 
 
 class GroupedEventOut(BaseModel):
-    day: datetime
+    updated_at: datetime
     value: int
     messages: list[EventOut]
 
