@@ -5,7 +5,7 @@ import { ApiError } from "../generated"
 export default function ErrorPage() {
   const error = useRouteError() as ApiError
 
-  return <main className="container m-8">
+  return <main className="container m-4 sm:mx-8">
     <ErrorBoxComponent className="max-w-lg" error={error} />
     {error.status === 401 && <Link className="text-blue-800 underline" to="/login">Se connecter</Link>}
   </main>
