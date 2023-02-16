@@ -4,7 +4,7 @@ import HiveListSelectorComponent, { Props } from "./hive-list-selector.component
 import website_logo from '../ressources/logo192.png'
 import back_icon from '../ressources/back_icon.png'
 
-export default function MobileMainMenuComponent({ hives, className }: Props) {
+export default function MobileMainMenuComponent({ className, hives }: Pick<Props, 'className' | 'hives'>) {
   const location = useLocation()
 
   const shouldShowHives = !location.pathname.includes('hives')
