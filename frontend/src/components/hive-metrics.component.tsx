@@ -12,19 +12,20 @@ import IconComponent from './icon.component'
 
 import { BehiveOut, BehiveMetrics } from '../generated'
 
+const logoIcons = {
+  humidity: HumidityIcon,
+  temperature: TemperatureIcon,
+  weight: WeightIcon,
+  alert: AlertIcon,
+  battery: BatteryIcon,
+} as const
+
 function HiveMetric({ name, value }: {
-  name: keyof BehiveMetrics
+  name: keyof typeof logoIcons
   value: { value: number | string, unit: string | null }
 }) {
   function logoForMetricName() {
-    const logoFinder = {
-      humidity: HumidityIcon,
-      temperature: TemperatureIcon,
-      weight: WeightIcon,
-      alert: AlertIcon,
-      battery: BatteryIcon,
-    }
-    return logoFinder[name]
+    return logoIcons[name]
   }
 
   const location = useLocation()
@@ -47,12 +48,30 @@ export default function HiveMetricsComponent({ name, sensors }: {
   const { isMobile } = useContext(ViewportContext)
   const gridColumn = isMobile ? 'grid-cols-2' : 'grid-flow-col'
 
+  const sensorValues = [
+    ...Object.keys(sensors).reduce(
+      (acc, value) => value.startsWith('temperature') ? acc.add('temperature') : acc.add(value),
+      new Set<string>()
+    )
+  ].map(key => {
+    if (key === 'temperature') {
+      return {
+        key,
+        value: {
+          unit: null,
+          value: `${sensors['temperature_indoor'].value} / ${sensors['temperature_outdoor'].value} °C`
+        }
+      }
+    }
+    return { key, value: sensors[key as keyof BehiveMetrics] }
+  })
+
   return <div className={`grid ${gridColumn} gap-8 md:gap-4 auto-cols-max`}>
     {isMobile && <h2 className='col-span-full text-xl text-yellow-500 font-semibold'>Gérer la ruche {name}</h2>}
-    {Object.keys(sensors).map(key => <HiveMetric
+    {sensorValues.map(({ key, value }) => <HiveMetric
       key={key}
-      name={key as keyof BehiveMetrics}
-      value={sensors[key as keyof BehiveMetrics]}
+      name={key as keyof typeof logoIcons}
+      value={value}
     />)}
   </div>
 }

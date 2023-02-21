@@ -14,7 +14,8 @@ class BehiveMetric:
 
 @dataclass
 class BehiveMetrics:
-    temperature: BehiveMetric
+    temperature_indoor: BehiveMetric
+    temperature_outdoor: BehiveMetric
     humidity: BehiveMetric
     weight: BehiveMetric
     battery: BehiveMetric

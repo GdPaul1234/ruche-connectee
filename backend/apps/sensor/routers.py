@@ -6,6 +6,7 @@ from bson import ObjectId
 
 from .models import SensorType, SensorOut, SensorValueOut, CreateSensorRecordModel, to_sensor_out
 
+from apps.beehive.actions import update_behive_sensor_last_value
 from apps.user.auth import User, get_current_active_user
 
 router = APIRouter()
@@ -15,7 +16,7 @@ def get_sensors_db(request: Request):
     return request.app.mongodb["sensors"]
 
 
-def get_behive_db(request: Request):
+def get_behives_db(request: Request):
     return request.app.mongodb["behives"]
 
 
@@ -33,6 +34,7 @@ async def create_sensor_record(
     request: Request
 ):
     sensors_db = get_sensors_db(request)
+    behives_db = get_behives_db(request)
 
     # TODO: harden behive user disjonction
     # add signature...
@@ -40,7 +42,7 @@ async def create_sensor_record(
     if current_user.username != f'behive_{behive_id}':
          raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
-    owner_id = await get_behive_db(request).find_one({ "_id": ObjectId(behive_id) }, { "owner_id": 1 })
+    owner_id = await behives_db.find_one({ "_id": ObjectId(behive_id) }, { "owner_id": 1 })
     sensor_record = jsonable_encoder(sensor_record.dict() | {"owner_id": owner_id})
 
     async with await get_mongo_db_client(request).start_session() as s:
@@ -59,6 +61,7 @@ async def create_sensor_record(
                     "values.updated_at": serialized_updated_at
                 }, session=s)
             ) is not None:
+                await update_behive_sensor_last_value(behives_db, behive_id, sensor_type, updated_sensor["values"][0], s)
                 return SensorValueOut(**updated_sensor["values"][0])
 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Sensor not found")

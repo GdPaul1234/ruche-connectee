@@ -25,7 +25,7 @@ async def create_behive(
     request: Request,
 ):
     behives_db = get_behives_db(request)
-    mock_metrics = {k: { "value": "Not set", "unit": None } for k in ("temperature", "humidity", "weight", "battery", "alert" )}
+    mock_metrics = {k: { "value": "Not set", "unit": None } for k in ("temperature_indoor", "temperature_outdoor", "humidity", "weight", "battery", "alert" )}
     behive = jsonable_encoder(behive.dict() | {"owner_id": current_user.id, "last_metrics": mock_metrics})
 
     async with await get_mongo_db_client(request).start_session() as s:
