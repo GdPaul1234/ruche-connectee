@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import cast
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
+from bson import ObjectId
 
 from .models import SensorType, SensorOut, SensorValueOut, CreateSensorRecordModel, to_sensor_out
 
@@ -33,15 +34,19 @@ async def create_sensor_record(
 ):
     sensors_db = get_sensors_db(request)
 
-    if await get_behive_db(request).find_one({ "_id": behive_id }, { "owner_id": 1 }) != current_user.id:
+    # TODO: harden behive user disjonction
+    # add signature...
+
+    if current_user.username != f'behive_{behive_id}':
          raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
-    sensor_record = jsonable_encoder(sensor_record.dict() | {"owner_id": current_user.id})
+    owner_id = await get_behive_db(request).find_one({ "_id": ObjectId(behive_id) }, { "owner_id": 1 })
+    sensor_record = jsonable_encoder(sensor_record.dict() | {"owner_id": owner_id})
 
     async with await get_mongo_db_client(request).start_session() as s:
         async with s.start_transaction():
             update_result = await sensors_db.update_one(
-                {"type": sensor_type, "behive_id": behive_id, "owner_id": current_user.id},
+                {"type": sensor_type, "behive_id": behive_id, "owner_id": owner_id},
                 {"$push": {"values": sensor_record}},
                 session=s
             )
