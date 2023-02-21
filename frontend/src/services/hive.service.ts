@@ -3,10 +3,10 @@ import { faker } from '@faker-js/faker'
 import { BehivesService, SensorsService, EventsService, SensorOut, EventsOut } from '../generated'
 
 enum SensorType {
-  temperature,
+  temperature_indoor,
+  temperature_outdoor,
   humidity,
   weight,
-  alert,
   battery
 }
 
@@ -23,16 +23,17 @@ export async function getHive(id: string) {
 export type TemperatureHumidityResponse = Record<'indoor' | 'outdoor', { updated_at: string, value: number, unit: string }[]>
 
 export async function getHiveTemperature(behiveId: string, fromDate: Date, toDate: Date): Promise<TemperatureHumidityResponse> {
-  const response = await SensorsService.listSensorRecordsByTypeApiSensorsBehiveBehiveIdSensorTypeGet({
-    behiveId,
-    sensorType: 'temperature',
-    fromDate: fromDate.toISOString(),
-    toDate: toDate.toISOString()
-  })
+  function getTemperatureByType(sensorType: 'temperature_indoor' | 'temperature_outdoor') {
+    return SensorsService.listSensorRecordsByTypeApiSensorsBehiveBehiveIdSensorTypeGet({
+      behiveId, sensorType, fromDate: fromDate.toISOString(), toDate: toDate.toISOString()
+    })
+      .then(response => response.values)
+      .catch(() => [])
+  }
 
   return {
-    indoor: response.values,
-    outdoor: response.values.map(v => ({ ...v, value: faker.datatype.number({ min: 0, max: 36 }) }))
+    indoor: await getTemperatureByType('temperature_indoor'),
+    outdoor: await getTemperatureByType('temperature_outdoor'),
   }
 }
 
