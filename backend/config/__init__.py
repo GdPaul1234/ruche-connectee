@@ -3,7 +3,10 @@ from pydantic import BaseSettings
 import os
 
 def get_env_path():
-    match os.getenv('PYTHON_ENV', default='PRODUCTION'):
+    environment = os.getenv('PYTHON_ENV', default='PRODUCTION')
+    print(environment)
+
+    match environment:
         case 'TEST':
             return 'env/test.env'
         case _:

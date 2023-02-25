@@ -1,37 +1,48 @@
-from datetime import timedelta
+import os
+
 from faker import Faker
 from faker.providers import person, internet, python
-from motor.motor_asyncio import AsyncIOMotorClient
+from httpx import AsyncClient
 import pytest
 
+from motor.motor_asyncio import AsyncIOMotorClient
+from bson import ObjectId
+
 from apps.user.models import UserInDB
-from apps.beehive.models import BehiveMetrics
-from apps.beehive.models import BehiveMetric, BehiveModel
+from apps.beehive.models import BehiveMetrics, BehiveMetric, BehiveModel
 from apps.sensor.models import SensorModel
 
-from apps.user.auth import create_access_token
+from apps.user.auth import get_password_hash
 
 from config import settings
+from main import app
 
 fake = Faker()
-fake.add_providers(person)
-fake.add_providers(internet)
-fake.add_providers(python)
+fake.add_provider(person)
+fake.add_provider(internet)
+fake.add_provider(python)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
+def anyio_backend():
+    return 'asyncio'
+
+
+@pytest.fixture()
 def mongodb_client():
+    print(os.getenv('PYTHON_ENV'))
+
     return AsyncIOMotorClient(settings.DB_URL, replicaSet="rs0")
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def mongodb(mongodb_client):
     return mongodb_client[settings.DB_NAME]
 
 
 def get_userindb_payload(
     *,
-    hashed_password="$2b$12$5xOtPg/7ye1/7oEeOZkhM.HitMUGOWdFI5uBuhf9gzd8vNCJ3Avda",  # = password
+    hashed_password=get_password_hash("password"),
     username=fake.user_name(),
     firstname=fake.first_name(),
     lastname=fake.last_name(),
@@ -45,40 +56,37 @@ def get_userindb_payload(
         lastname=lastname,
         email=email,
         disabled=disabled
-    )
+    ).dict(exclude={"id"}) | {"_id": ObjectId()}
 
 
 @pytest.fixture
 @pytest.mark.anyio
 async def user(mongodb):
-    userindb_payload = get_userindb_payload().dict()
-    user = await mongodb.users.insert_one(userindb_payload)
+    userindb_payload = get_userindb_payload()
+    inserted_user = await mongodb.users.insert_one(userindb_payload)
 
-    yield user
+    yield await mongodb.users.find_one({"_id": inserted_user.inserted_id})
 
-    await mongodb.users.delete_one({"_id":  user.inserted_id})
+    await mongodb.users.delete_one({"_id":  inserted_user.inserted_id})
 
 
 @pytest.fixture
-def token(user):
-    return create_access_token(
-        data={"sub": user.username},
-        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
+@pytest.mark.anyio
+async def token(user):
+    async with AsyncClient(app=app, base_url="http://localhost:8888") as ac:
+            response = await ac.post("/api/token", data={"username": user["username"], "password": "password"})
+            access_token = response.json()["access_token"]
+            print(access_token)
+            return access_token
 
 
 def fake_last_metrics():
     return BehiveMetrics(
-        temperature_indoor=BehiveMetric(value=fake.pyfloat(
-            left_digits=2, right_digits=1, min_value=20, max_value=40), unit="°C"),
-        temperature_outdoor=BehiveMetric(value=fake.pyfloat(
-            left_digits=2, right_digits=1, min_value=-10, max_value=25), unit="°C"),
-        humidity=BehiveMetric(value=fake.pyfloat(
-            left_digits=2, right_digits=1, min_value=40, max_value=80), unit="%"),
-        weight=BehiveMetric(value=fake.pyfloat(
-            left_digits=2, right_digits=1, min_value=0, max_value=100), unit="kg"),
-        battery=BehiveMetric(value=fake.pyfloat(
-            left_digits=2, right_digits=1, min_value=0, max_value=100), unit="%"),
+        temperature_indoor=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=40), unit="°C"),
+        temperature_outdoor=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=-10, max_value=25), unit="°C"),
+        humidity=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=40, max_value=80), unit="%"),
+        weight=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=0, max_value=100), unit="kg"),
+        battery=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=0, max_value=100), unit="%"),
         alert=BehiveMetric(value=fake.pyint(max_value=3), unit=None)
     )
 
@@ -88,34 +96,33 @@ def get_behive_with_payload(
     owner_id: str,
     name=f"Ruche #{fake.user_name()}"
 ):
-    return BehiveModel(name=name, owner_id=owner_id, last_metrics=fake_last_metrics())
+    return BehiveModel(
+        name=name,
+        owner_id=owner_id,
+        last_metrics=fake_last_metrics()
+    ).dict(exclude={"id"}) | {"_id": ObjectId()}
 
 
 @pytest.fixture
 @pytest.mark.anyio
 async def behive(mongodb, user):
-    behive_payload = get_behive_with_payload(owner_id=str(user.id)).dict()
-    behive = await mongodb.behives.insert_one(behive_payload)
+    behive_payload = get_behive_with_payload(owner_id=str(user["_id"]))
+    inserted_behive = await mongodb.behives.insert_one(behive_payload)
 
-    yield behive
+    yield await mongodb.behives.find_one({"_id": inserted_behive.inserted_id})
 
-    await mongodb.behives.delete_one({"_id":  behive.inserted_id})
+    await mongodb.behives.delete_one({"_id":  inserted_behive.inserted_id})
 
 
 @pytest.fixture
 @pytest.mark.anyio
 async def behive_sensors(mongodb, behive, user):
     all_sensors = [
-        SensorModel(type='temperature_indoor', behive_id=str(
-            behive.id), owner_id=str(user.id), values=[]).dict(),
-        SensorModel(type='temperature_outdoor', behive_id=str(
-            behive.id), owner_id=str(user.id), values=[]).dict(),
-        SensorModel(type='humidity', behive_id=str(behive.id),
-                    owner_id=str(user.id), values=[]).dict(),
-        SensorModel(type='weight', behive_id=str(behive.id),
-                    owner_id=str(user.id), values=[]).dict(),
-        SensorModel(type='battery', behive_id=str(behive.id),
-                    owner_id=str(user.id), values=[]).dict(),
+        SensorModel(type='temperature_indoor', behive_id=behive["_id"], owner_id=user["_id"], values=[]).dict(exclude={"id"}) | {"_id": ObjectId()},
+        SensorModel(type='temperature_outdoor', behive_id=behive["_id"], owner_id=user["_id"], values=[]).dict(exclude={"id"}) | {"_id": ObjectId()},
+        SensorModel(type='humidity', behive_id=behive["_id"], owner_id=user["_id"], values=[]).dict(exclude={"id"}) | {"_id": ObjectId()},
+        SensorModel(type='weight', behive_id=behive["_id"], owner_id=user["_id"], values=[]).dict(exclude={"id"}) | {"_id": ObjectId()},
+        SensorModel(type='battery', behive_id=behive["_id"], owner_id=user["_id"], values=[]).dict(exclude={"id"}) | {"_id": ObjectId()},
     ]
 
     inserted_sensors = await mongodb.sensors.insert_many(all_sensors)

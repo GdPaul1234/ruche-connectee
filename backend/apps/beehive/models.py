@@ -6,8 +6,7 @@ from pydantic import BaseModel, Field
 from fastapi.encoders import jsonable_encoder
 
 
-@dataclass
-class BehiveMetric:
+class BehiveMetric(BaseModel):
     value: str | float
     unit: str | None
 
