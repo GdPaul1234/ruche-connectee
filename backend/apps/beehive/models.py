@@ -12,8 +12,7 @@ class BehiveMetric:
     unit: str | None
 
 
-@dataclass
-class BehiveMetrics:
+class BehiveMetrics(BaseModel):
     temperature_indoor: BehiveMetric
     temperature_outdoor: BehiveMetric
     humidity: BehiveMetric
