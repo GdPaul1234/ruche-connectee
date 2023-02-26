@@ -14,7 +14,8 @@ class BehiveMetric(BaseModel):
 class BehiveMetrics(BaseModel):
     temperature_indoor: BehiveMetric
     temperature_outdoor: BehiveMetric
-    humidity: BehiveMetric
+    humidity_indoor: BehiveMetric
+    humidity_outdoor: BehiveMetric
     weight: BehiveMetric
     battery: BehiveMetric
     alert: BehiveMetric
@@ -43,7 +44,8 @@ class BehiveOut(BaseModel):
                 "last_metrics": {
                     "temperature_indoor": { "value": 40, "unit": '°C' },
                     "temperature_outdoor": { "value": 15, "unit": '°C' },
-                    "humidity": { "value": 70, "unit": '%' },
+                    "humidity_indoor": { "value": 55, "unit": '%' },
+                    "humidity_outdoor": { "value": 70, "unit": '%' },
                     "weight": { "value": 50, "unit": 'kg' },
                     "battery": { "value": 20, "unit": '%' },
                     "alert": { "value": 2, "unit": None }

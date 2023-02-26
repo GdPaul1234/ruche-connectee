@@ -98,7 +98,8 @@ def fake_last_metrics():
     return BehiveMetrics(
         temperature_indoor=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=40), unit="°C"),
         temperature_outdoor=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=-10, max_value=25), unit="°C"),
-        humidity=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=40, max_value=80), unit="%"),
+        humidity_indoor=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=40, max_value=80), unit="%"),
+        humidity_outdoor=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=40, max_value=80), unit="%"),
         weight=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=100), unit="kg"),
         battery=BehiveMetric(value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=100), unit="%"),
         alert=BehiveMetric(value=fake.pyint(max_value=3), unit=None)
@@ -160,7 +161,8 @@ async def behive_sensors(mongodb, behive, user):
     all_sensors = [
         SensorModel(type='temperature_indoor', behive_id=behive_id, owner_id=owner_id, values=fake_sensor_values(min_value=20, max_value=40, unit="°C")).dict(exclude={"id"}) | {"_id": ObjectId()},
         SensorModel(type='temperature_outdoor', behive_id=behive_id, owner_id=owner_id, values=fake_sensor_values(min_value=-10, max_value=25, unit="°C")).dict(exclude={"id"}) | {"_id": ObjectId()},
-        SensorModel(type='humidity', behive_id=behive_id, owner_id=owner_id, values=fake_sensor_values(min_value=40, max_value=80, unit="%")).dict(exclude={"id"}) | {"_id": ObjectId()},
+        SensorModel(type='humidity_indoor', behive_id=behive_id, owner_id=owner_id, values=fake_sensor_values(min_value=40, max_value=80, unit="%")).dict(exclude={"id"}) | {"_id": ObjectId()},
+        SensorModel(type='humidity_outdoor', behive_id=behive_id, owner_id=owner_id, values=fake_sensor_values(min_value=40, max_value=80, unit="%")).dict(exclude={"id"}) | {"_id": ObjectId()},
         SensorModel(type='weight', behive_id=behive_id, owner_id=owner_id, values=fake_sensor_values(min_value=20, max_value=100, unit="kg")).dict(exclude={"id"}) | {"_id": ObjectId()},
         SensorModel(type='battery', behive_id=behive_id, owner_id=owner_id, values=fake_sensor_values(min_value=20, max_value=100, unit="%")).dict(exclude={"id"}) | {"_id": ObjectId()},
     ]

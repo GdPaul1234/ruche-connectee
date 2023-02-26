@@ -1,16 +1,23 @@
-import { faker } from '@faker-js/faker'
-
 import { BehivesService, SensorsService, EventsService, SensorOut, EventsOut } from '../generated'
 
 enum SensorType {
   temperature_indoor,
   temperature_outdoor,
-  humidity,
+  humidity_indoor,
+  humidity_outdoor,
   weight,
   battery
 }
 
 export const sensorTypeValues = Object.values(SensorType).filter(v => typeof v === 'string')
+
+function safeGetSensorValue(behiveId: string, fromDate: Date, toDate: Date, sensorType: 'temperature_indoor' | 'temperature_outdoor' | 'humidity_indoor' | 'humidity_outdoor') {
+  return SensorsService.listSensorRecordsByTypeApiSensorsBehiveBehiveIdSensorTypeGet({
+    behiveId, sensorType, fromDate: fromDate.toISOString(), toDate: toDate.toISOString()
+  })
+    .then(response => response.values)
+    .catch(() => [])
+}
 
 export async function getHives() {
   return await BehivesService.listBehivesApiBehivesGet()
@@ -23,31 +30,16 @@ export async function getHive(id: string) {
 export type TemperatureHumidityResponse = Record<'indoor' | 'outdoor', { updated_at: string, value: number, unit: string }[]>
 
 export async function getHiveTemperature(behiveId: string, fromDate: Date, toDate: Date): Promise<TemperatureHumidityResponse> {
-  function getTemperatureByType(sensorType: 'temperature_indoor' | 'temperature_outdoor') {
-    return SensorsService.listSensorRecordsByTypeApiSensorsBehiveBehiveIdSensorTypeGet({
-      behiveId, sensorType, fromDate: fromDate.toISOString(), toDate: toDate.toISOString()
-    })
-      .then(response => response.values)
-      .catch(() => [])
-  }
-
   return {
-    indoor: await getTemperatureByType('temperature_indoor'),
-    outdoor: await getTemperatureByType('temperature_outdoor'),
+    indoor: await safeGetSensorValue(behiveId, fromDate, toDate, 'temperature_indoor'),
+    outdoor: await safeGetSensorValue(behiveId, fromDate, toDate, 'temperature_outdoor'),
   }
 }
 
 export async function getHiveHumidity(behiveId: string, fromDate: Date, toDate: Date): Promise<TemperatureHumidityResponse> {
-  const response = await SensorsService.listSensorRecordsByTypeApiSensorsBehiveBehiveIdSensorTypeGet({
-    behiveId,
-    sensorType: 'humidity',
-    fromDate: fromDate.toISOString(),
-    toDate: toDate.toISOString()
-  })
-
   return {
-    indoor: response.values,
-    outdoor: response.values.map(v => ({ ...v, value: faker.datatype.number({ min: 60, max: 100 }) }))
+    indoor: await safeGetSensorValue(behiveId, fromDate, toDate, 'humidity_indoor'),
+    outdoor: await safeGetSensorValue(behiveId, fromDate, toDate, 'humidity_outdoor')
   }
 }
 

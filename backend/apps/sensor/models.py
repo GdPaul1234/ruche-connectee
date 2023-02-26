@@ -12,7 +12,7 @@ class SensorValue(BaseModel):
     unit: str
 
 
-SensorType = Literal['temperature_indoor', 'temperature_outdoor', 'humidity', 'weight', 'battery']
+SensorType = Literal['temperature_indoor', 'temperature_outdoor', 'humidity_indoor', 'humidity_outdoor', 'weight', 'battery']
 
 
 class SensorModel(BaseModel):

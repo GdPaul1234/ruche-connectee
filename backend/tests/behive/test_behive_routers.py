@@ -15,7 +15,7 @@ class TestBehiveRouter:
 
         response_body = response.json()
         assert {"id", "name", "last_metrics"} <= response_body.keys()
-        assert {"temperature_indoor", "temperature_outdoor", "humidity", "weight", "battery", "alert"} <= response_body.get("last_metrics").keys()
+        assert {"temperature_indoor", "temperature_outdoor", "humidity_indoor", "humidity_outdoor", "weight", "battery", "alert"} <= response_body.get("last_metrics").keys()
         assert response_body.get("name") == "Ruche 1"
 
         # delete created behive
@@ -44,7 +44,7 @@ class TestBehiveRouter:
 
         response_body = response.json()
         assert {"id", "name", "last_metrics"} <= response_body.keys()
-        assert {"temperature_indoor", "temperature_outdoor", "humidity", "weight", "battery", "alert"} <= response_body.get("last_metrics").keys()
+        assert {"temperature_indoor", "temperature_outdoor", "humidity_indoor", "humidity_outdoor", "weight", "battery", "alert"} <= response_body.get("last_metrics").keys()
         assert response_body.get("id") == str(behive["_id"])
         assert response_body.get("name") == behive["name"]
 
@@ -57,7 +57,7 @@ class TestBehiveRouter:
 
         response_body = response.json()
         assert {"id", "name", "last_metrics"} <= response_body.keys()
-        assert {"temperature_indoor", "temperature_outdoor", "humidity", "weight", "battery", "alert"} <= response_body.get("last_metrics").keys()
+        assert {"temperature_indoor", "temperature_outdoor", "humidity_indoor", "humidity_outdoor", "weight", "battery", "alert"} <= response_body.get("last_metrics").keys()
         assert response_body.get("id") == str(behive["_id"])
         assert response_body.get("name") == "Ruche 1"
 

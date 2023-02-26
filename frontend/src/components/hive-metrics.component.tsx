@@ -22,7 +22,7 @@ const logoIcons = {
 
 function HiveMetric({ name, value }: {
   name: keyof typeof logoIcons
-  value: { value: number | string, unit: string | null }
+  value: { value: number | string, unit?: string | null }
 }) {
   function logoForMetricName() {
     return logoIcons[name]
@@ -50,16 +50,22 @@ export default function HiveMetricsComponent({ name, sensors }: {
 
   const sensorValues = [
     ...Object.keys(sensors).reduce(
-      (acc, value) => value.startsWith('temperature') ? acc.add('temperature') : acc.add(value),
-      new Set<string>()
+      (acc, value) => {
+        if (value.startsWith('temperature')) return acc.add('temperature')
+        if (value.startsWith('humidity')) return acc.add('humidity')
+        return acc.add(value)
+      }, new Set<string>()
     )
   ].map(key => {
-    if (key === 'temperature') {
+    if (['temperature', "humidity"].includes(key)) {
+      type KeyofIndoor = 'temperature_indoor' | 'humidity_indoor'
+      type KeyofOutdoor = 'temperature_outdoor' | 'humidity_outdoor'
+
       return {
         key,
         value: {
           unit: null,
-          value: `${sensors['temperature_indoor'].value}/${sensors['temperature_outdoor'].value} °C`
+          value: `${sensors[`${key}_indoor` as KeyofIndoor].value}/${sensors[`${key}_outdoor` as KeyofOutdoor].value} °C`
         }
       }
     }

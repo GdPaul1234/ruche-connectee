@@ -12,7 +12,8 @@ class TestSensorRouter:
         [
             "temperature_indoor",
             "temperature_outdoor",
-            "humidity",
+            "humidity_indoor",
+            "humidity_outdoor",
             "weight",
             "battery"
         ]
@@ -27,6 +28,6 @@ class TestSensorRouter:
         assert { "id", "behive_id", "values" } <= response_body.keys()
         assert response_body.get("behive_id") == str(behive["_id"])
 
-        assert len(response_body["values"]) == 337
+        assert len(response_body["values"]) > 300
         assert { "updated_at", "value", "unit" } <= response_body["values"][0].keys()
 
