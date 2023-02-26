@@ -47,10 +47,14 @@ app.add_middleware(
 )
 
 
-if __name__ == "__main__":
+def run_server():
     uvicorn.run(
         "main:app",
         host=settings.HOST,
         reload=settings.DEBUG_MODE,
         port=settings.PORT,
     )
+
+
+if __name__ == "__main__":
+    run_server()

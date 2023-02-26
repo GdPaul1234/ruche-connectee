@@ -41,7 +41,8 @@ class BehiveOut(BaseModel):
                 "id": "00010203-0405-0607-0809-0a0b0c0d0e0f",
                 "name": "Ruche 1",
                 "last_metrics": {
-                    "temperature": { "value": 15, "unit": '°C' },
+                    "temperature_indoor": { "value": 40, "unit": '°C' },
+                    "temperature_outdoor": { "value": 15, "unit": '°C' },
                     "humidity": { "value": 70, "unit": '%' },
                     "weight": { "value": 50, "unit": 'kg' },
                     "battery": { "value": 20, "unit": '%' },

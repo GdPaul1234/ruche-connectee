@@ -2,7 +2,7 @@ import os
 
 from faker import Faker
 from faker.providers import person, internet, python
-from httpx import AsyncClient
+from fastapi.testclient import TestClient
 import pytest
 
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -27,28 +27,19 @@ fake.add_provider(python)
 def anyio_backend():
     return 'asyncio'
 
-
-@pytest.fixture()
+@pytest.fixture
 def mongodb_client():
     print(os.getenv('PYTHON_ENV'))
 
     return AsyncIOMotorClient(settings.DB_URL, replicaSet="rs0")
 
 
-@pytest.fixture()
+@pytest.fixture
 def mongodb(mongodb_client):
     return mongodb_client[settings.DB_NAME]
 
 
-def get_userindb_payload(
-    *,
-    hashed_password=get_password_hash("password"),
-    username=fake.user_name(),
-    firstname=fake.first_name(),
-    lastname=fake.last_name(),
-    email=fake.email(),
-    disabled=None
-):
+def get_userindb_payload(*, hashed_password, username, firstname, lastname, email, disabled):
     return UserInDB(
         hashed_password=hashed_password,
         username=username,
@@ -62,7 +53,14 @@ def get_userindb_payload(
 @pytest.fixture
 @pytest.mark.anyio
 async def user(mongodb):
-    userindb_payload = get_userindb_payload()
+    userindb_payload = get_userindb_payload(
+        hashed_password=get_password_hash("password"),
+        username=fake.user_name(),
+        firstname=fake.first_name(),
+        lastname=fake.last_name(),
+        email=fake.email(),
+        disabled=None
+    )
     inserted_user = await mongodb.users.insert_one(userindb_payload)
 
     yield await mongodb.users.find_one({"_id": inserted_user.inserted_id})
@@ -70,14 +68,14 @@ async def user(mongodb):
     await mongodb.users.delete_one({"_id":  inserted_user.inserted_id})
 
 
-@pytest.fixture
+@pytest.fixture()
 @pytest.mark.anyio
 async def token(user):
-    async with AsyncClient(app=app, base_url="http://localhost:8888") as ac:
-            response = await ac.post("/api/token", data={"username": user["username"], "password": "password"})
-            access_token = response.json()["access_token"]
-            print(access_token)
-            return access_token
+    print('token user_id', user)
+
+    with TestClient(app=app, base_url="http://localhost:8888") as client:
+        response = client.post("/api/token", data={"username": user["username"], "password": "password"})
+        return response.json()["access_token"]
 
 
 def fake_last_metrics():
@@ -91,11 +89,7 @@ def fake_last_metrics():
     )
 
 
-def get_behive_with_payload(
-    *,
-    owner_id: str,
-    name=f"Ruche #{fake.user_name()}"
-):
+def get_behive_with_payload(*, owner_id, name):
     return BehiveModel(
         name=name,
         owner_id=owner_id,
@@ -106,10 +100,13 @@ def get_behive_with_payload(
 @pytest.fixture
 @pytest.mark.anyio
 async def behive(mongodb, user):
-    behive_payload = get_behive_with_payload(owner_id=str(user["_id"]))
+
+    behive_payload = get_behive_with_payload(owner_id=str(user["_id"]), name=f"Ruche #{fake.user_name()}")
     inserted_behive = await mongodb.behives.insert_one(behive_payload)
 
-    yield await mongodb.behives.find_one({"_id": inserted_behive.inserted_id})
+    behive_db = await mongodb.behives.find_one({"_id": inserted_behive.inserted_id})
+    print('behive owner_id', behive_db['owner_id'])
+    yield behive_db
 
     await mongodb.behives.delete_one({"_id":  inserted_behive.inserted_id})
 
