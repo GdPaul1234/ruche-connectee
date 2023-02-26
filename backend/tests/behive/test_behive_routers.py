@@ -18,6 +18,10 @@ class TestBehiveRouter:
         assert {"temperature_indoor", "temperature_outdoor", "humidity", "weight", "battery", "alert"} <= response_body.get("last_metrics").keys()
         assert response_body.get("name") == "Ruche 1"
 
+        # delete created behive
+        with TestClient(app=app, base_url=self.base_url) as client:
+            client.delete(f"/api/behives/{response_body['id']}", headers={"Authorization": f"Bearer ${token}"})
+
 
     @pytest.mark.anyio
     async def test_get_all_user_behives(self, token, behive):

@@ -18,6 +18,9 @@ export async function sensorLoader(fetcher: LoaderFetcher, { request, params }: 
   const start = new Date(+(url.searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)))
   const end = new Date(+(url.searchParams.get('end') || Date.now()))
 
+  start.setHours(0, 0, 0, 0)
+  end.setHours(23, 59, 59, 999)
+
   if (params.hiveId) return fetcher(params.hiveId, start, end)
 }
 

@@ -94,8 +94,8 @@ async def list_sensor_records_by_type(
                         "as": "value",
                         "cond": {
                             "$and": [
-                                {"$gte": ["$$value.updated_at", from_date.astimezone(timezone.utc).isoformat()]},
-                                {"$lt": ["$$value.updated_at", to_date.astimezone(timezone.utc).isoformat()]}
+                                {"$gte": ["$$value.updated_at", from_date.astimezone(timezone.utc)]},
+                                {"$lt": ["$$value.updated_at", to_date.astimezone(timezone.utc)]}
                             ]
                         }
                     }

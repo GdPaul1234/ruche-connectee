@@ -59,7 +59,7 @@ export default function HiveMetricsComponent({ name, sensors }: {
         key,
         value: {
           unit: null,
-          value: `${sensors['temperature_indoor'].value} / ${sensors['temperature_outdoor'].value} °C`
+          value: `${sensors['temperature_indoor'].value}/${sensors['temperature_outdoor'].value} °C`
         }
       }
     }
