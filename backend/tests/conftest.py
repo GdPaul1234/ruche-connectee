@@ -79,7 +79,7 @@ async def user(mongodb):
     await mongodb.users.delete_one({"_id":  inserted_user.inserted_id})
 
 
-@pytest.fixture()
+@pytest.fixture
 @pytest.mark.anyio
 async def token(user):
     print('token user_id', user)
@@ -87,6 +87,28 @@ async def token(user):
     with TestClient(app=app, base_url="http://localhost:8888") as client:
         response = client.post("/api/token", data={"username": user["username"], "password": "password"})
         return response.json()["access_token"]
+
+@pytest.fixture
+@pytest.mark.anyio
+async def token_behive(mongodb, behive):
+    print('behive user_id', behive)
+
+    userindb_payload = get_userindb_payload(
+        hashed_password=get_password_hash("password"),
+        username=f"behive_{str(behive['_id'])}",
+        firstname=f"Managed Behive {str(behive['_id'])}",
+        lastname="property of Super Hive",
+        email=fake.email(),
+        disabled=None
+    )
+    inserted_user = await mongodb.users.insert_one(userindb_payload)
+    user = await mongodb.users.find_one({"_id": inserted_user.inserted_id})
+
+    with TestClient(app=app, base_url="http://localhost:8888") as client:
+        response = client.post("/api/token", data={"username": user["username"], "password": "password"})
+    yield response.json()["access_token"]
+
+    await mongodb.users.delete_one({"_id":  inserted_user.inserted_id})
 
 
 ###############################################################################
