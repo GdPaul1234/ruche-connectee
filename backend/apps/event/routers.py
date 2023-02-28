@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from bson import ObjectId
 
-from .models import EventOut, EventsOut, CreateEventRecordModel, GroupedEventOut
+from .models import EventOut, EventsOut, CreateEventRecordModel, GroupedEventOut, to_event_out
 
 from apps.user.auth import User, get_current_active_user
 
@@ -48,7 +48,7 @@ async def create_event_record(
             new_event = await events_db.insert_one(event_record, session=s)
             created_event = await events_db.find_one({"_id": new_event.inserted_id}, session=s)
 
-            return EventOut(**created_event)
+            return to_event_out(created_event)
 
 
 @router.get("/behive/{behive_id}/", response_description="Get behive events", response_model=EventsOut)
@@ -68,13 +68,10 @@ async def list_events(
     events = await events_db.find({
         "behive_id": behive_id,
         "owner_id": current_user.id,
-        "updated_at": {
-            "$gte": from_date.astimezone(timezone.utc).isoformat(),
-            "$lt": to_date.astimezone(timezone.utc).isoformat()
-        }
+        "updated_at": {"$gte": from_date, "$lt": to_date}
     }).to_list(length=2500)
 
-    grouped_events = itertools.groupby(events, lambda e: e["updated_at"].split("T")[0])
+    grouped_events = itertools.groupby(events, lambda e: e["updated_at"].isoformat().split("T")[0])
 
     return EventsOut(
         behive_id=behive_id,
@@ -82,7 +79,7 @@ async def list_events(
             GroupedEventOut(
                 updated_at=datetime.fromisoformat(day),
                 value=len(event_list := list(events)),  # NOSONAR
-                messages=[EventOut(**event) for event in event_list]
+                messages=[to_event_out(event) for event in event_list]
             ) for day, events in grouped_events
         ]
     )

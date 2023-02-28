@@ -1,8 +1,8 @@
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, BarElement, Filler, Title, Tooltip, Legend } from 'chart.js'
+import { Chart as ChartJS, CategoryScale, TimeScale, LinearScale, PointElement, BarElement, Filler, Title, Tooltip, Legend } from 'chart.js'
 import { ChartProps, Bar } from 'react-chartjs-2'
 import 'chartjs-adapter-luxon'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, BarElement, Filler, Title, Tooltip, Legend)
+ChartJS.register(CategoryScale, TimeScale, LinearScale, PointElement, BarElement, Filler, Title, Tooltip, Legend)
 
 export const defaultOptions: ChartProps<'bar'>['options'] = {
   responsive: true,

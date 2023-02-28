@@ -82,8 +82,6 @@ class TestSensorRouter:
         ("battery", CreateSensorRecordModel(updated_at=datetime.today(), value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=100), unit="%")),
     ])
     async def test_create_sensor_records(self, token_behive, behive, behive_sensors, sensor_type, payload):
-        print(f"{token_behive=} {sensor_type=}, {payload.dict()=}")
-
         with TestClient(app=app, base_url=self.base_url) as client:
             response = client.post(
                 f"/api/sensors/behive/{behive['_id']}/{sensor_type}",

@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 
 EventType = Literal['theft', 'connectivity', 'battery',
@@ -16,6 +17,7 @@ class EventModel(BaseModel):
 
 
 class EventOut(BaseModel):
+    id: str
     type: EventType | str
     updated_at: datetime
     content: str
@@ -23,6 +25,7 @@ class EventOut(BaseModel):
     class Config:
         schema_extra = {
             "example": {
+                "id": "00010203-0405-0607-0809-0a0b0c0d0e0f",
                 "type": "connectivity",
                 "updated_at": "2023-02-10T08:41:01.118Z",
                 "content": "Behive 'Hello World' lost connectivity 5 minutes ago"
@@ -77,3 +80,6 @@ class CreateEventRecordModel(BaseModel):
                 "content": "My custom event message"
             }
         }
+
+def to_event_out(event):
+    return jsonable_encoder(EventOut(id=str(event["_id"]), **event))

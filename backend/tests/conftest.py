@@ -220,7 +220,7 @@ def get_events_payload(
         for updated_at_timestamp in range(
             int(start.timestamp()),
             int((end + timedelta(seconds=1)).timestamp()),
-            int(timedelta(hours=fake.pyint(min_value=0, max_value=24)).total_seconds())
+            int(timedelta(hours=random.randint(1, 28)).total_seconds())
         )
     ]
 
@@ -231,7 +231,8 @@ async def events(mongodb, behive, user):
     behive_id = str(behive["_id"])
     owner_id = str(user["_id"])
 
-    inserted_events = await mongodb.events.insert_many(get_events_payload(behive_id=behive_id, owner_id=owner_id))
+    events_payload = get_events_payload(behive_id=behive_id, owner_id=owner_id)
+    inserted_events = await mongodb.events.insert_many(events_payload)
 
     yield inserted_events
 

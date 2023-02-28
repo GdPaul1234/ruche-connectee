@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from faker import Faker
-from faker.providers import python
 from fastapi.testclient import TestClient
 from fastapi.encoders import jsonable_encoder
 import pytest
+
+from bson import ObjectId
 
 from apps.event.models import CreateEventRecordModel
 from main import app
@@ -21,11 +21,18 @@ class TestEventRouter:
 
         response_body = response.json()
 
-        # TODO: check response
+        assert { "behive_id", "values" } <= response_body.keys()
+        assert response_body.get("behive_id") == str(behive['_id'])
 
+        assert len(response_body.get("values")) > 1
+
+        assert { "updated_at", "value", "messages" } <= response_body["values"][0].keys()
+        assert { "type", "updated_at", "content" } <= response_body["values"][0]["messages"][0].keys()
+
+        assert all(event["value"] == len(event["messages"]) for event in response_body["values"])
 
     @pytest.mark.anyio
-    async def test_create_event_record(self, token_behive, behive):
+    async def test_create_event_record(self, token_behive, behive, mongodb):
         with TestClient(app=app, base_url=self.base_url) as client:
             response = client.post(
                 f"/api/events",
@@ -45,4 +52,6 @@ class TestEventRouter:
         assert { "type", "content", "updated_at" } <= response_body.keys()
         assert response_body.get("type") == "battery"
         assert response_body.get("content") == "My event content"
+
+        await mongodb.events.delete_one({ "_id": ObjectId(response_body['id']) })
 
