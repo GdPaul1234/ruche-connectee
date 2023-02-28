@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 import itertools
-from typing import cast
+
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 
-from .models import EventType, EventOut, EventsOut, CreateEventRecordModel, GroupedEventOut
+from .models import EventOut, EventsOut, CreateEventRecordModel, GroupedEventOut
 
 from apps.user.auth import User, get_current_active_user
 
@@ -51,17 +51,14 @@ async def list_events(
     *,
     current_user: User = Depends(get_current_active_user),
     behive_id: str,
-    from_date: datetime = datetime.today().replace(
-        day=1, hour=0, minute=0, second=0, microsecond=0),
-    to_date: datetime = datetime.today().replace(
-        hour=23, minute=59, second=59, microsecond=999999),
+    from_date: datetime = datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0),
+    to_date: datetime = datetime.today().replace(hour=23, minute=59, second=59, microsecond=999999),
     request: Request
 ) -> EventsOut:
     events_db = get_events_db(request)
 
     if from_date > to_date:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Inconsistent date range")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inconsistent date range")
 
     events = await events_db.find({
         "behive_id": behive_id,
@@ -70,10 +67,9 @@ async def list_events(
             "$gte": from_date.astimezone(timezone.utc).isoformat(),
             "$lt": to_date.astimezone(timezone.utc).isoformat()
         }
-    }).to_list(length=100)
+    }).to_list(length=2500)
 
-    grouped_events = itertools.groupby(
-        events, lambda e: e["updated_at"].split("T")[0])
+    grouped_events = itertools.groupby(events, lambda e: e["updated_at"].split("T")[0])
 
     return EventsOut(
         behive_id=behive_id,

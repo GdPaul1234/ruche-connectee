@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from faker import Faker
 from faker.providers import python
@@ -30,6 +30,46 @@ class TestSensorRouter:
         assert response_body.get("behive_id") == str(behive["_id"])
 
         assert len(response_body["values"]) > 300
+        assert { "updated_at", "value", "unit" } <= response_body["values"][0].keys()
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize("sensor_type", ["temperature_indoor"])
+    async def test_list_sensor_records_type_incoherent_date_range(self, token, behive, behive_sensors, sensor_type):
+        with TestClient(app=app, base_url=self.base_url) as client:
+            response = client.get(
+                f"/api/sensors/behive/{behive['_id']}/{sensor_type}",
+                params={
+                    "from_date": (datetime.today() - timedelta(days=4)).isoformat(),
+                    "to_date": (datetime.today() - timedelta(days=5)).isoformat()
+                },
+                headers={"Authorization": f"Bearer ${token}"}
+            )
+
+        assert response.status_code == 400
+
+        response_body = response.json()
+        assert response_body.get("detail") == "Inconsistent date range"
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize("sensor_type", sensor_types)
+    async def test_list_sensor_records_type_valid_date_range(self, token, behive, behive_sensors, sensor_type):
+        with TestClient(app=app, base_url=self.base_url) as client:
+            response = client.get(
+                f"/api/sensors/behive/{behive['_id']}/{sensor_type}",
+                params={
+                    "from_date": (datetime.today() - timedelta(days=5)).isoformat(),
+                    "to_date": (datetime.today() - timedelta(days=4)).isoformat()
+                },
+                headers={"Authorization": f"Bearer ${token}"}
+            )
+
+        assert response.status_code == 200
+
+        response_body = response.json()
+        assert { "id", "behive_id", "values" } <= response_body.keys()
+        assert response_body.get("behive_id") == str(behive["_id"])
+
+        assert len(response_body["values"]) == 48 # 1 event every 30 minutes for one day
         assert { "updated_at", "value", "unit" } <= response_body["values"][0].keys()
 
     @pytest.mark.anyio

@@ -52,7 +52,7 @@ async def list_behives(
         to_behive_out(doc)
         for doc in await behives_db
             .find({"owner_id": current_user.id})
-            .to_list(length=100)
+            .to_list(length=2500)
     ]
 
 
