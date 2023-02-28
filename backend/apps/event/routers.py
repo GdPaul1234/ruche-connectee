@@ -3,6 +3,7 @@ import itertools
 
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
+from bson import ObjectId
 
 from .models import EventOut, EventsOut, CreateEventRecordModel, GroupedEventOut
 
@@ -23,7 +24,7 @@ def get_mongo_db_client(request: Request):
     return request.app.mongodb_client
 
 
-@router.post("/", response_description="Add new behive event", response_model=EventOut)
+@router.post("/", response_description="Add new behive event",status_code=status.HTTP_201_CREATED, response_model=EventOut)
 async def create_event_record(
     *,
     current_user: User = Depends(get_current_active_user),
@@ -31,12 +32,16 @@ async def create_event_record(
     request: Request
 ):
     events_db = get_events_db(request)
+    behives_db = get_behives_db(request)
 
-    if await get_behives_db(request).find_one({"_id": event_record.behive_id}, {"owner_id": 1}) != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    if current_user.username != f'behive_{event_record.behive_id}':
+         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    behive_owner_id = await behives_db.find_one({ "_id": ObjectId(event_record.behive_id) }, { "owner_id": 1 })
+    owner_id = behive_owner_id["owner_id"]
 
     event_record = jsonable_encoder(
-        event_record.dict() | {"owner_id": current_user.id})
+        event_record.dict() | {"owner_id": owner_id})
 
     async with await get_mongo_db_client(request).start_session() as s:
         async with s.start_transaction():

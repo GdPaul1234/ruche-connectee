@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 import os
+import random
 
 from faker import Faker
-from faker.providers import person, internet, python
+from faker.providers import person, internet, python, lorem
 from fastapi.testclient import TestClient
 import pytest
 
@@ -12,17 +13,18 @@ from bson import ObjectId
 from apps.user.models import UserInDB
 from apps.beehive.models import BehiveMetrics, BehiveMetric, BehiveModel
 from apps.sensor.models import SensorModel, SensorValue
+from apps.event.models import EventModel
 
 from apps.user.auth import get_password_hash
 
 from config import settings
 from main import app
 
-fake = Faker()
+fake = Faker(['en-US'])
 fake.add_provider(person)
 fake.add_provider(internet)
 fake.add_provider(python)
-
+fake.add_provider(lorem)
 
 @pytest.fixture
 def anyio_backend():
@@ -196,3 +198,41 @@ async def behive_sensors(mongodb, behive, user):
 
     await mongodb.sensors.delete_many({"_id": {"$in": inserted_sensors.inserted_ids}})
 
+###############################################################################
+###                                 EVENTS                                  ###
+###############################################################################
+
+def get_events_payload(
+    *,
+    start=datetime.today() - timedelta(days=7),
+    end=datetime.today(),
+    behive_id: str,
+    owner_id: str
+):
+    return [
+        EventModel(
+            behive_id=behive_id,
+            owner_id=owner_id,
+            updated_at=datetime.fromtimestamp(updated_at_timestamp),
+            content=fake.sentence(),
+            type=random.choice(['theft', 'connectivity', 'battery', 'disease', 'harvest', 'weather', 'maintenance'])
+        ).dict(exclude={"id"}) | {"_id": ObjectId()}
+        for updated_at_timestamp in range(
+            int(start.timestamp()),
+            int((end + timedelta(seconds=1)).timestamp()),
+            int(timedelta(hours=fake.pyint(min_value=0, max_value=24)).total_seconds())
+        )
+    ]
+
+
+@pytest.fixture
+@pytest.mark.anyio
+async def events(mongodb, behive, user):
+    behive_id = str(behive["_id"])
+    owner_id = str(user["_id"])
+
+    inserted_events = await mongodb.events.insert_many(get_events_payload(behive_id=behive_id, owner_id=owner_id))
+
+    yield inserted_events
+
+    await mongodb.events.delete_many({"_id": {"$in": inserted_events.inserted_ids}})
