@@ -11,14 +11,17 @@ export type SensorLoaderArgs = {
   params: Partial<Record<'hiveId', string>>
 }
 
-type LoaderFetcher = (hiveId: string, start: number, stop: number) => unknown
+type LoaderFetcher = (hiveId: string, fromDate: Date, toDate: Date) => unknown
 
 export async function sensorLoader(fetcher: LoaderFetcher, { request, params }: SensorLoaderArgs) {
   const url = new URL(request.url)
-  const start = url.searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)
-  const stop = url.searchParams.get('end') || Date.now()
+  const start = new Date(+(url.searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)))
+  const end = new Date(+(url.searchParams.get('end') || Date.now()))
 
-  if (params.hiveId) return fetcher(params.hiveId, +start, +stop)
+  start.setHours(0, 0, 0, 0)
+  end.setHours(23, 59, 59, 999)
+
+  if (params.hiveId) return fetcher(params.hiveId, start, end)
 }
 
 const ChartLine = lazy(() => import("./chart-line.component"))
@@ -35,8 +38,8 @@ export function HiveBaseSensorPage({ chartType, footerChildren }: {
   const navigate = useNavigate()
 
   const state = initDateRangeState({
-    start: new Date(searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000)),
-    end: new Date(searchParams.get('end') || Date.now())
+    start: new Date(+(searchParams.get('start') || (Date.now() - 7 * 24 * 3600 * 1000))),
+    end: new Date(+(searchParams.get('end') || Date.now()))
   })
 
   const onDateRangeChange = useNavigateOnDateRange(state, navigate)

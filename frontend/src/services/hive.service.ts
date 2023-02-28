@@ -1,103 +1,79 @@
-import { faker } from '@faker-js/faker'
+import { BehivesService, SensorsService, EventsService, SensorOut, EventsOut } from '../generated'
 
 enum SensorType {
-  temperature,
-  humidity,
+  temperature_indoor,
+  temperature_outdoor,
+  humidity_indoor,
+  humidity_outdoor,
   weight,
-  alert,
   battery
 }
 
-export const sensorTypeValues = Object.values(SensorType).filter(v => typeof v === 'string')
+export const sensorTypeValues = Object.values(SensorType).concat('temperature', 'humidity').filter(v => typeof v === 'string')
 
-export type Hive = {
-  id: number
-  name: string
-  last_metrics: Record<keyof typeof SensorType, { value: number, unit: string | null }>
+function safeGetSensorValue(behiveId: string, fromDate: Date, toDate: Date, sensorType: 'temperature_indoor' | 'temperature_outdoor' | 'humidity_indoor' | 'humidity_outdoor') {
+  return SensorsService.listSensorRecordsByTypeApiSensorsBehiveBehiveIdSensorTypeGet({
+    behiveId, sensorType, fromDate: fromDate.toISOString(), toDate: toDate.toISOString()
+  })
+    .then(response => response.values)
+    .catch(() => [])
 }
 
-export function getHive(hiveId: number): Promise<Hive> {
-  return Promise.resolve({
-    id: hiveId,
-    name: `${hiveId}`,
-    last_metrics: {
-      temperature: { value: 15, unit: '°C' },
-      humidity: { value: 70, unit: '%' },
-      weight: { value: 50, unit: 'kg' },
-      battery: { value: 20, unit: '%' },
-      alert: { value: 2, unit: null }
-    }
-  })
+export async function getHives() {
+  return await BehivesService.listBehivesApiBehivesGet()
 }
 
-export type TemperatureHumidityResponse = Record<'indoor' | 'outdoor', { updatedAt: string, value: number }[]>
-
-export function getHiveTemperature(hiveId: string, start: number, stop: number): Promise<TemperatureHumidityResponse> {
-  const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
-
-  return Promise.resolve({
-    indoor: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) })),
-    outdoor: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) }))
-  })
+export async function getHive(id: string) {
+  return await BehivesService.showBehiveApiBehivesIdGet({ id })
 }
 
-export function getHiveHumidity(hiveId: string, start: number, stop: number): Promise<TemperatureHumidityResponse> {
-  const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
+export type TemperatureHumidityResponse = Record<'indoor' | 'outdoor', { updated_at: string, value: number, unit: string }[]>
 
-  return Promise.resolve({
-    indoor: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) })),
-    outdoor: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) }))
-  })
+export async function getHiveTemperature(behiveId: string, fromDate: Date, toDate: Date): Promise<TemperatureHumidityResponse> {
+  return {
+    indoor: await safeGetSensorValue(behiveId, fromDate, toDate, 'temperature_indoor'),
+    outdoor: await safeGetSensorValue(behiveId, fromDate, toDate, 'temperature_outdoor'),
+  }
 }
 
-export type WeightResponse = Record<'weight', { updatedAt: string, value: number }[]>
-
-export function getHiveWeight(hiveId: string, start: number, stop: number): Promise<WeightResponse> {
-  const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
-
-  return Promise.resolve({
-    weight: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) })),
-  })
+export async function getHiveHumidity(behiveId: string, fromDate: Date, toDate: Date): Promise<TemperatureHumidityResponse> {
+  return {
+    indoor: await safeGetSensorValue(behiveId, fromDate, toDate, 'humidity_indoor'),
+    outdoor: await safeGetSensorValue(behiveId, fromDate, toDate, 'humidity_outdoor')
+  }
 }
 
-export type BatteryResponse = Record<'battery', { updatedAt: string, value: number }[]>
-
-export function getBatteryResponse(hiveId: string, start: number, stop: number): Promise<BatteryResponse> {
-  const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
-
-  return Promise.resolve({
-    battery: days.map(day => ({ updatedAt: day, value: faker.datatype.number({ min: 0, max: 36 }) })),
+export type WeightResponse = Record<'weight', SensorOut['values']>
+export async function getHiveWeight(behiveId: string, fromDate: Date, toDate: Date): Promise<WeightResponse> {
+  const response = await SensorsService.listSensorRecordsByTypeApiSensorsBehiveBehiveIdSensorTypeGet({
+    behiveId,
+    sensorType: 'weight',
+    fromDate: fromDate.toISOString(),
+    toDate: toDate.toISOString()
   })
+
+  return { weight: response.values }
 }
 
-export type AlertResponse = Record<'alert', {
-  day: string
-  value: number
-  messages: {
-    type: string
-    updatedAt: string
-    content: string
-  }[]
-}[]>
-
-export function getAlertResponse(hiveId: string, start: number, stop: number): Promise<AlertResponse> {
-  const days = Array.from({ length: 30 }, (_, i) => (new Date(Date.now() - (30 - i) * 24 * 60 * 60 * 1000)).toISOString())
-
-  return Promise.resolve({
-    alert: days.map(day => {
-      const nbMessage = faker.datatype.number({ min: 0, max: 5 })
-      return {
-        day,
-        value: nbMessage,
-        messages: Array.from(
-          { length: nbMessage },
-          (_, i) => ({
-            type: 'info',
-            updatedAt: new Date(new Date(day).getTime() + i * 2 * 3600 * 1000).toISOString(),
-            content: faker.hacker.phrase()
-          })
-        )
-      }
-    }),
+export type BatteryResponse = Record<'battery', SensorOut['values']>
+export async function getBatteryResponse(behiveId: string, fromDate: Date, toDate: Date): Promise<BatteryResponse> {
+  const response = await SensorsService.listSensorRecordsByTypeApiSensorsBehiveBehiveIdSensorTypeGet({
+    behiveId,
+    sensorType: 'battery',
+    fromDate: fromDate.toISOString(),
+    toDate: toDate.toISOString()
   })
+
+  return { battery: response.values }
+}
+
+export type AlertResponse = Record<'alert', EventsOut['values']>
+export async function getAlertResponse(behiveId: string, fromDate: Date, toDate: Date): Promise<AlertResponse> {
+  const response = await EventsService.listEventsApiEventsBehiveBehiveIdGet({
+    behiveId,
+    fromDate: fromDate.toISOString(),
+    toDate: toDate.toISOString()
+  })
+
+  return { alert: response.values }
 }

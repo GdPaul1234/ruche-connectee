@@ -1,7 +1,9 @@
 import { ChartProps } from "react-chartjs-2"
-import { formatDate } from "./date.service"
+import { DateTime } from "luxon"
 
-export type ApiSensorResponse = Record<string, { updatedAt: string, value: number }[]>
+import { SensorOut } from "../generated"
+
+export type ApiSensorResponse = Record<string, SensorOut['values']>
 type ChartData = ChartProps<'line'>['data'] | ChartProps<'bar'>['data']
 
 const borderColors = ['#da7e4b', '#868b91']
@@ -15,7 +17,7 @@ export function apiSensorResponseToChartData(chartType: 'line' | 'bar', apiRespo
   const keys = Object.keys(apiResponse)
 
   return {
-    labels: apiResponse[keys[0]].map(data => formatDate(new Date(data.updatedAt))),
+    labels: apiResponse[keys[0]].map(data => DateTime.fromISO(data.updated_at)),
     datasets: keys.map((label, i) => ({
       label,
       data: apiResponse[label].map(data => data.value),
@@ -24,5 +26,5 @@ export function apiSensorResponseToChartData(chartType: 'line' | 'bar', apiRespo
       lineTension: 0.2, // smooth graph
       fill: true
     }))
-  }
+  } as ChartData
 }

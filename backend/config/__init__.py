@@ -1,8 +1,16 @@
 from pydantic import BaseSettings
-from dotenv import load_dotenv
 
-# TODO add env options
-load_dotenv()
+import os
+
+def get_env_path():
+    environment = os.getenv('PYTHON_ENV', default='PRODUCTION')
+    print(environment)
+
+    match environment:
+        case 'TEST':
+            return 'env/test.env'
+        case _:
+            return 'env/prod.env'
 
 class CommonSettings(BaseSettings):
     APP_NAME: str = "Super Hive - Hive"
@@ -26,7 +34,8 @@ class AuthSettings(BaseSettings):
 
 
 class Settings(CommonSettings, ServerSettings, DatabaseSettings, AuthSettings):
-    pass
+    class Config:
+        env_file = get_env_path()
 
 
 settings = Settings()

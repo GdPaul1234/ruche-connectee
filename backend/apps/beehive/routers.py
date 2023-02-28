@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
+from bson import ObjectId
 
 from .models import BehiveOut, CreateBehiveModel, UpdateBehiveModel, to_behive_out
 
@@ -24,7 +25,12 @@ async def create_behive(
     request: Request,
 ):
     behives_db = get_behives_db(request)
-    mock_metrics = {k: { "value": "Not set", "unit": None } for k in ("temperature", "humidity", "weight", "battery", "alert" )}
+    mock_metrics = {k: {"value": "Not set", "unit": None} for k in (
+        "temperature_indoor", "temperature_outdoor",
+        "humidity_indoor", "humidity_outdoor",
+        "weight", "battery", "alert"
+    )}
+
     behive = jsonable_encoder(behive.dict() | {"owner_id": current_user.id, "last_metrics": mock_metrics})
 
     async with await get_mongo_db_client(request).start_session() as s:
@@ -46,7 +52,7 @@ async def list_behives(
         to_behive_out(doc)
         for doc in await behives_db
             .find({"owner_id": current_user.id})
-            .to_list(length=100)
+            .to_list(length=2500)
     ]
 
 
@@ -59,8 +65,10 @@ async def show_behive(
 ):
     behives_db = get_behives_db(request)
 
-    if (behive := await behives_db.find_one({"_id": id, "owner_id": current_user.id})) is not None:
+    if (behive := await behives_db.find_one({"_id": ObjectId(id), "owner_id": current_user.id})) is not None:
         return to_behive_out(behive)
+
+    print(current_user.id)
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Behive {id} not found")
 
@@ -80,17 +88,17 @@ async def update_behive(
         async with s.start_transaction():
             if len(behive_update) >= 1:
                 update_result = await behives_db.update_one(
-                    {"_id": id, "owner_id": current_user.id},
+                    {"_id": ObjectId(id), "owner_id": current_user.id},
                     {"$set": behive_update},
                     session=s
                 )
 
                 if update_result.modified_count == 1 and (
-                    updated_behive := await behives_db.find_one({"_id": id, "owner_id": current_user.id}, session=s)
+                    updated_behive := await behives_db.find_one({"_id": ObjectId(id), "owner_id": current_user.id}, session=s)
                 ) is not None:
                     return to_behive_out(updated_behive)
 
-            if (existing_behive := await behives_db.find_one({"_id": id, "owner_id": current_user.id}, session=s)) is not None:
+            if (existing_behive := await behives_db.find_one({"_id": ObjectId(id), "owner_id": current_user.id}, session=s)) is not None:
                 return to_behive_out(existing_behive)
 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Behive {id} not found")
@@ -104,7 +112,7 @@ async def delete_behive(
     id: str
 ):
     behives_db = get_behives_db(request)
-    delete_result = await behives_db.delete_one({"_id": id, "owner_id": current_user.id})
+    delete_result = await behives_db.delete_one({"_id": ObjectId(id), "owner_id": current_user.id})
 
     if delete_result.deleted_count == 1:
         return {}

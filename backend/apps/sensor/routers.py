@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
-from typing import cast
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
+from pymongo import ReturnDocument
+from bson import ObjectId
 
 from .models import SensorType, SensorOut, SensorValueOut, CreateSensorRecordModel, to_sensor_out
 
+from apps.beehive.actions import update_behive_sensor_last_value
 from apps.user.auth import User, get_current_active_user
 
 router = APIRouter()
@@ -14,7 +16,7 @@ def get_sensors_db(request: Request):
     return request.app.mongodb["sensors"]
 
 
-def get_behive_db(request: Request):
+def get_behives_db(request: Request):
     return request.app.mongodb["behives"]
 
 
@@ -22,7 +24,7 @@ def get_mongo_db_client(request: Request):
     return request.app.mongodb_client
 
 
-@router.post("/behive/{behive_id}/{sensor_type}", response_description="Add new sensor type record to behive", response_model=SensorValueOut)
+@router.post("/behive/{behive_id}/{sensor_type}", response_description="Add new sensor type record to behive", status_code=status.HTTP_201_CREATED, response_model=SensorValueOut)
 async def create_sensor_record(
     *,
     current_user: User = Depends(get_current_active_user), # TODO: authorize only balance user
@@ -32,29 +34,33 @@ async def create_sensor_record(
     request: Request
 ):
     sensors_db = get_sensors_db(request)
+    behives_db = get_behives_db(request)
 
-    if await get_behive_db(request).find_one({ "_id": behive_id }, { "owner_id": 1 }) != current_user.id:
-         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+    # TODO: harden behive user disjonction
+    # add signature...
 
-    sensor_record = jsonable_encoder(sensor_record.dict() | {"owner_id": current_user.id})
+    if current_user.username != f'behive_{behive_id}':
+         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+
+    behive_owner_id = await behives_db.find_one({ "_id": ObjectId(behive_id) }, { "owner_id": 1 })
+    owner_id = behive_owner_id["owner_id"]
+
+    serialized_sensor_record = jsonable_encoder(sensor_record.dict() | {"owner_id": owner_id})
 
     async with await get_mongo_db_client(request).start_session() as s:
         async with s.start_transaction():
-            update_result = await sensors_db.update_one(
-                {"type": sensor_type, "behive_id": behive_id, "owner_id": current_user.id},
-                {"$push": {"values": sensor_record}},
+            updated_sensor = await sensors_db.find_one_and_update(
+                {"type": sensor_type, "behive_id": behive_id, "owner_id": owner_id},
+                {"$push": {"values": serialized_sensor_record}},
+                return_document=ReturnDocument.AFTER,
                 session=s
             )
 
-            serialized_updated_at = datetime.fromisoformat(cast(dict, sensor_record)["updated_at"]).astimezone(timezone.utc).isoformat()
 
-            if update_result.modified_count == 1 and (
-                updated_sensor := await sensors_db.find_one({
-                    "owner_id": current_user.id,
-                    "values.updated_at": serialized_updated_at
-                }, session=s)
-            ) is not None:
-                return SensorValueOut(**updated_sensor["values"][0])
+            if updated_sensor is not None:
+                last_record = updated_sensor["values"][-1]
+                await update_behive_sensor_last_value(behives_db, behive_id, sensor_type, last_record, s)
+                return SensorValueOut(**last_record)
 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Sensor not found")
 
@@ -86,8 +92,8 @@ async def list_sensor_records_by_type(
                         "as": "value",
                         "cond": {
                             "$and": [
-                                {"$gte": ["$$value.updated_at", from_date.astimezone(timezone.utc).isoformat()]},
-                                {"$lt": ["$$value.updated_at", to_date.astimezone(timezone.utc).isoformat()]}
+                                {"$gte": ["$$value.updated_at", from_date]},
+                                {"$lt": ["$$value.updated_at", to_date]}
                             ]
                         }
                     }

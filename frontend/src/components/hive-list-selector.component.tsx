@@ -5,13 +5,12 @@ import { ViewportContext } from "./contexts/viewport.context"
 import IconComponent from "./icon.component"
 import logo from '../ressources/ruche.png'
 
-type Hive = {
-  id: number
-  name: string
-}
+import { BehiveOut, User } from "../generated"
 
+type Hive = Pick<BehiveOut, 'id' | 'name'>
 export interface Props {
   hives: Hive[]
+  user: User
   className?: string
 }
 
@@ -43,7 +42,7 @@ function MobileHiveListItemComponent({ id, name }: Hive) {
   </li>
 }
 
-export default function HiveListSelectorComponent({ hives }: Props) {
+export default function HiveListSelectorComponent({ hives }: Pick<Props, 'hives'>) {
   const { isMobile } = useContext(ViewportContext)
   const ListItemRenderer = isMobile ? MobileHiveListItemComponent : HiveListItemComponent
 

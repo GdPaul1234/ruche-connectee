@@ -1,7 +1,6 @@
 import { useContext } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 
-import { Hive } from '../services/hive.service'
 import { ViewportContext } from './contexts/viewport.context'
 
 import HumidityIcon from '../ressources/humidity_icon.png'
@@ -11,19 +10,22 @@ import AlertIcon from '../ressources/alert_icon.png'
 import BatteryIcon from '../ressources/battery_icon.png'
 import IconComponent from './icon.component'
 
+import { BehiveOut, BehiveMetrics } from '../generated'
+
+const logoIcons = {
+  humidity: HumidityIcon,
+  temperature: TemperatureIcon,
+  weight: WeightIcon,
+  alert: AlertIcon,
+  battery: BatteryIcon,
+} as const
+
 function HiveMetric({ name, value }: {
-  name: keyof Hive['last_metrics']
-  value: { value: number | string, unit: string | null }
+  name: keyof typeof logoIcons
+  value: { value: number | string, unit?: string | null }
 }) {
   function logoForMetricName() {
-    const logoFinder = {
-      humidity: HumidityIcon,
-      temperature: TemperatureIcon,
-      weight: WeightIcon,
-      alert: AlertIcon,
-      battery: BatteryIcon,
-    }
-    return logoFinder[name]
+    return logoIcons[name]
   }
 
   const location = useLocation()
@@ -40,18 +42,42 @@ function HiveMetric({ name, value }: {
 }
 
 export default function HiveMetricsComponent({ name, sensors }: {
-  name: Hive['name']
-  sensors: Hive['last_metrics']
+  name: BehiveOut['name']
+  sensors: BehiveMetrics
 }) {
   const { isMobile } = useContext(ViewportContext)
   const gridColumn = isMobile ? 'grid-cols-2' : 'grid-flow-col'
 
+  const sensorValues = [
+    ...Object.keys(sensors).reduce(
+      (acc, value) => {
+        if (value.startsWith('temperature')) return acc.add('temperature')
+        if (value.startsWith('humidity')) return acc.add('humidity')
+        return acc.add(value)
+      }, new Set<string>()
+    )
+  ].map(key => {
+    if (['temperature', "humidity"].includes(key)) {
+      type KeyofIndoor = 'temperature_indoor' | 'humidity_indoor'
+      type KeyofOutdoor = 'temperature_outdoor' | 'humidity_outdoor'
+
+      return {
+        key,
+        value: {
+          unit: null,
+          value: `${sensors[`${key}_indoor` as KeyofIndoor].value}/${sensors[`${key}_outdoor` as KeyofOutdoor].value} °C`
+        }
+      }
+    }
+    return { key, value: sensors[key as keyof BehiveMetrics] }
+  })
+
   return <div className={`grid ${gridColumn} gap-8 md:gap-4 auto-cols-max`}>
     {isMobile && <h2 className='col-span-full text-xl text-yellow-500 font-semibold'>Gérer la ruche {name}</h2>}
-    {Object.keys(sensors).map(key => <HiveMetric
+    {sensorValues.map(({ key, value }) => <HiveMetric
       key={key}
-      name={key as keyof Hive['last_metrics']}
-      value={sensors[key as keyof Hive['last_metrics']]}
+      name={key as keyof typeof logoIcons}
+      value={value}
     />)}
   </div>
 }

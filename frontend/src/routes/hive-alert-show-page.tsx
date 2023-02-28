@@ -9,7 +9,7 @@ export const loader = (loaderArgs: SensorLoaderArgs) => sensorLoader(getAlertRes
 export function HiveAlertPage() {
   return <HiveBaseSensorPage
     chartType="bar"
-    footerChildren={rawValue => <HiveAlertFooter sensorRawValue={rawValue as AlertResponse} />} />
+    footerChildren={rawValue => <HiveAlertFooter sensorRawValue={rawValue as unknown as AlertResponse} />} />
 }
 
 function HiveAlertFooter({ sensorRawValue }: {
@@ -18,13 +18,13 @@ function HiveAlertFooter({ sensorRawValue }: {
   return <>
     {sensorRawValue.alert
       .filter(_ => _.value > 0)
-      .map(rawValue => <section key={rawValue.day} className="mb-4">
+      .map(rawValue => <section key={rawValue.updated_at} className="mb-4">
         <Disclosure>
           {({ open }) => (
             <>
               <Disclosure.Button className="flex w-full justify-between rounded-lg bg-gray-100 px-4 py-2 text-left text-sm font-medium text-slate-700 hover:bg-gray-200 focus:outline-none focus-visible:ring focus-visible:ring-gray-500 focus-visible:ring-opacity-75">
                 <h3 className="text-xl font-semibold">
-                  {formatDate(new Date(rawValue.day), { dateStyle: 'full' })} ({rawValue.value})
+                  {formatDate(new Date(rawValue.updated_at), { dateStyle: 'full' })} ({rawValue.value})
                 </h3>
                 <ChevronUpIcon
                   className={`${open ? 'rotate-180 transform' : ''} h-5 w-5`}
@@ -32,10 +32,10 @@ function HiveAlertFooter({ sensorRawValue }: {
               </Disclosure.Button>
               <Disclosure.Panel className="px-2 md:px-4 pt-4 pb-2">
                 <ul>
-                  {rawValue.messages.map(message => <li key={message.updatedAt} className="md:flex md:justify-between rounded-md bg-gray-50 p-2 mb-2">
+                  {rawValue.messages.map(message => <li key={message.updated_at} className="md:flex md:justify-between rounded-md bg-gray-50 p-2 mb-2">
                     <div className="font-semibold py-1">{message.type}</div>
                     <div className="py-1">{message.content}</div>
-                    <div className="font-light py-1">{formatDate(new Date(message.updatedAt), { timeStyle: 'short' })}</div>
+                    <div className="font-light py-1">{formatDate(new Date(message.updated_at), { timeStyle: 'short' })}</div>
                   </li>)}
                 </ul>
               </Disclosure.Panel>

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Any, Optional
 import uuid
 
@@ -6,16 +5,16 @@ from pydantic import BaseModel, Field
 from fastapi.encoders import jsonable_encoder
 
 
-@dataclass
-class BehiveMetric:
+class BehiveMetric(BaseModel):
     value: str | float
     unit: str | None
 
 
-@dataclass
-class BehiveMetrics:
-    temperature: BehiveMetric
-    humidity: BehiveMetric
+class BehiveMetrics(BaseModel):
+    temperature_indoor: BehiveMetric
+    temperature_outdoor: BehiveMetric
+    humidity_indoor: BehiveMetric
+    humidity_outdoor: BehiveMetric
     weight: BehiveMetric
     battery: BehiveMetric
     alert: BehiveMetric
@@ -42,8 +41,10 @@ class BehiveOut(BaseModel):
                 "id": "00010203-0405-0607-0809-0a0b0c0d0e0f",
                 "name": "Ruche 1",
                 "last_metrics": {
-                    "temperature": { "value": 15, "unit": '°C' },
-                    "humidity": { "value": 70, "unit": '%' },
+                    "temperature_indoor": { "value": 40, "unit": '°C' },
+                    "temperature_outdoor": { "value": 15, "unit": '°C' },
+                    "humidity_indoor": { "value": 55, "unit": '%' },
+                    "humidity_outdoor": { "value": 70, "unit": '%' },
                     "weight": { "value": 50, "unit": 'kg' },
                     "battery": { "value": 20, "unit": '%' },
                     "alert": { "value": 2, "unit": None }
