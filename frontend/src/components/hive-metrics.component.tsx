@@ -35,8 +35,8 @@ function HiveMetric({ name, value }: {
   return <NavLink to={name}>
     <IconComponent rounded small={!isMobile} hoverable active={isActive} activeBorder logo={logoForMetricName()} />
     <div className="text-base md:text-sm w-28 md:w-16">
-      <div className="text-ellipsis overflow-hidden">{name}</div>
-      <div className="text-sm md:text-xs font-medium text-slate-700">{`${value.value} ${value.unit ?? ''}`}</div>
+      <div className="truncate">{name}</div>
+      <div className="truncate text-sm md:text-xs font-medium text-slate-700">{`${value.value} ${value.unit ?? ''}`}</div>
     </div>
   </NavLink>
 }

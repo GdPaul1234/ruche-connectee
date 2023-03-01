@@ -14,8 +14,8 @@ export default function IconComponent({
     activeBorder?: boolean
     logo: string
   }) {
-  const containerSize = () => small ? 'h-14 w-14' : 'h-36 w-36'
-  const logoSize = () => small ? 'h-16 w-16' : 'h-40 w-40'
+  const containerSize = () => small ? 'h-16 w-16' : 'h-36 w-36'
+  const logoSize = () => small ? 'h-[4.5rem] w-[4.5rem]' : 'h-40 w-40'
   const marginSize = () => small ? 'mt-[-12px]' : 'mt-[-24px]'
   const roundedBorder = () => rounded ? 'rounded-md' : ''
 
