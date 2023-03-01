@@ -29,7 +29,10 @@ class TestSensorRouter:
         assert { "id", "behive_id", "values" } <= response_body.keys()
         assert response_body.get("behive_id") == str(behive["_id"])
 
-        assert len(response_body["values"]) > 300
+        from_date = datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        to_date = datetime.today().replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        assert len(response_body["values"]) == (to_date - from_date).total_seconds() // 60 // 30 // 2
         assert { "updated_at", "value", "unit" } <= response_body["values"][0].keys()
 
     @pytest.mark.anyio
@@ -81,7 +84,7 @@ class TestSensorRouter:
         ("weight", CreateSensorRecordModel(updated_at=datetime.today(), value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=100), unit="kg")),
         ("battery", CreateSensorRecordModel(updated_at=datetime.today(), value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=100), unit="%")),
     ])
-    async def test_create_sensor_records(self, token_behive, behive, behive_sensors, sensor_type, payload):
+    async def test_create_sensor_record(self, token_behive, behive, behive_sensors, sensor_type, payload):
         with TestClient(app=app, base_url=self.base_url) as client:
             response = client.post(
                 f"/api/sensors/behive/{behive['_id']}/{sensor_type}",
