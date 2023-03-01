@@ -7,10 +7,10 @@ def get_env_path():
     print(environment)
 
     match environment:
-        case 'TEST':
-            return 'env/test.env'
-        case _:
+        case 'PRODUCTION':
             return 'env/prod.env'
+        case _:
+            return 'env/test.env'
 
 class CommonSettings(BaseSettings):
     APP_NAME: str = "Super Hive - Hive"
