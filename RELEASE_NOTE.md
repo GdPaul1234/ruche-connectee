@@ -1,5 +1,17 @@
 # Super Hive release notes
 
+## v0.4.0 [Pusher] Initial support for sensor pushers
+
+- Fix: Simplify pusher architecture
+- Fix: Migrate from python built-in configparser to Pydantic BaseSettings
+  - Validated environment variable on runtime!
+- Add: Fallback when main endpoint cannot be reached
+- Add: Sample pusher: DummyWeightSensorPusher
+
+The launch of puher is managed externally via cron for example
+
+---
+
 ## v0.3.2 [Frontend] Fix mobile navigation for sensors
 
 - Fix: Hide sensors lists when showing sensor data on mobile
