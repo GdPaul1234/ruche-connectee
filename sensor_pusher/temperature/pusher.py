@@ -19,13 +19,13 @@ class TemperaturePusher:
         humidity, temperature = Adafruit_DHT.read_retry(self._sensor, self._pin)
         return humidity, temperature
 
-    def get_token(self):
-        response = httpx.post("/api/token", data=self._credential.dict())
+    def get_token(self, endpoint):
+        response = httpx.post(f"{endpoint}/api/token", data=self._credential.dict())
         response.raise_for_status()
 
         return response.json()["access_token"]
 
-    def send(self, *, endpoint=None, sensor_value=None, attempt=1):
+    def send(self, *, endpoint=None, sensor_value=None, attempt=1, error: Exception|None=None):
         if endpoint == None:
             endpoint = self._endpoint
 
@@ -33,17 +33,17 @@ class TemperaturePusher:
             sensor_value = self.read_sensor_value()
         humidity, temperature = sensor_value
 
-        if attempt > 2: return
+        if attempt > 2: raise (error if error else RuntimeError("Too many attemps"))
 
         for sensor_type, value, unit in (("humidity", humidity, "%"), ("temperature", temperature, "°C")):
             try:
                 httpx.post(
                     f"{endpoint}/api/sensors/behive/{self._behive_id}/{sensor_type}_{self._sensor_location}",
                     json={"updated_at": datetime.today().isoformat(),"value": value,"unit": unit},
-                    headers={"Authorization": f"Bearer ${self.get_token()}"}
+                    headers={"Authorization": f"Bearer ${self.get_token(endpoint)}"}
                 )
             except httpx.NetworkError:
-                self.send(endpoint=self._fallback_endpoint, sensor_value=sensor_value, attempt=attempt+1)
+                self.send(endpoint=self._fallback_endpoint, sensor_value=sensor_value, attempt=attempt+1, error=error)
 
 if __name__ == '__main__':
     import argparse

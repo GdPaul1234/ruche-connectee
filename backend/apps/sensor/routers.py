@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pymongo import ReturnDocument
@@ -55,7 +55,6 @@ async def create_sensor_record(
                 return_document=ReturnDocument.AFTER,
                 session=s
             )
-
 
             if updated_sensor is not None:
                 last_record = updated_sensor["values"][-1]

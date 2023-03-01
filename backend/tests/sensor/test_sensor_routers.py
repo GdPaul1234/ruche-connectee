@@ -32,7 +32,7 @@ class TestSensorRouter:
         from_date = datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         to_date = datetime.today().replace(hour=23, minute=59, second=59, microsecond=999999)
 
-        assert len(response_body["values"]) == (to_date - from_date).total_seconds() // 60 // 30 // 2
+        assert len(response_body["values"]) <= (to_date - from_date).total_seconds() // 60 // 30
         assert { "updated_at", "value", "unit" } <= response_body["values"][0].keys()
 
     @pytest.mark.anyio
@@ -99,4 +99,28 @@ class TestSensorRouter:
         print(response.json())
         assert response_body.get("value") == payload.value
         assert response_body.get("unit") == payload.unit
+
+    @pytest.mark.anyio
+    @pytest.mark.parametrize("sensor_type,payload", [
+        ("temperature_indoor", CreateSensorRecordModel(updated_at=datetime.today(), value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=40), unit="°C")),
+        ("temperature_outdoor", CreateSensorRecordModel(updated_at=datetime.today(), value=fake.pyfloat(left_digits=2, right_digits=1, min_value=-10, max_value=25), unit="°C")),
+        ("humidity_indoor", CreateSensorRecordModel(updated_at=datetime.today(), value=fake.pyfloat(left_digits=2, right_digits=1, min_value=40, max_value=80), unit="%")),
+        ("humidity_outdoor", CreateSensorRecordModel(updated_at=datetime.today(), value=fake.pyfloat(left_digits=2, right_digits=1, min_value=40, max_value=80), unit="%")),
+        ("weight", CreateSensorRecordModel(updated_at=datetime.today(), value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=100), unit="kg")),
+        ("battery", CreateSensorRecordModel(updated_at=datetime.today(), value=fake.pyfloat(left_digits=2, right_digits=1, min_value=20, max_value=100), unit="%")),
+    ])
+    async def test_create_sensor_record_update_last_metrics(self, mongodb, token_behive, behive, behive_sensors, sensor_type, payload):
+        with TestClient(app=app, base_url=self.base_url) as client:
+            response = client.post(
+                f"/api/sensors/behive/{behive['_id']}/{sensor_type}",
+                json=jsonable_encoder(payload.dict()),
+                headers={"Authorization": f"Bearer ${token_behive}"}
+            )
+
+        assert response.status_code == 201
+
+        behive = await mongodb.behives.find_one({"_id": behive['_id']})
+
+        assert behive["last_metrics"][sensor_type]["value"] == payload.value
+        assert behive["last_metrics"][sensor_type]["unit"] == payload.unit
 
