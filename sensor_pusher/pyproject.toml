@@ -8,8 +8,8 @@ packages = [{include = "sensor_pusher"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-schedule = "^1.1.0"
-
+pydantic = {extras = ["dotenv"], version = "^1.10.5"}
+httpx = "^0.23.3"
 
 [build-system]
 requires = ["poetry-core"]

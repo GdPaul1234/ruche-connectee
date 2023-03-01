@@ -156,6 +156,7 @@ async def behive(mongodb, user):
 ###                                SENSORS                                  ###
 ###############################################################################
 
+
 def fake_sensor_values(
     *,
     start=datetime.today() - timedelta(days=7),
@@ -198,9 +199,11 @@ async def behive_sensors(mongodb, behive, user):
 
     await mongodb.sensors.delete_many({"_id": {"$in": inserted_sensors.inserted_ids}})
 
+
 ###############################################################################
 ###                                 EVENTS                                  ###
 ###############################################################################
+
 
 def get_events_payload(
     *,
@@ -225,6 +228,11 @@ def get_events_payload(
     ]
 
 
+###############################################################################
+###                                 SERVER                                  ###
+###############################################################################
+
+
 @pytest.fixture
 @pytest.mark.anyio
 async def events(mongodb, behive, user):
@@ -237,3 +245,16 @@ async def events(mongodb, behive, user):
     yield inserted_events
 
     await mongodb.events.delete_many({"_id": {"$in": inserted_events.inserted_ids}})
+
+def run_server():
+    import uvicorn
+    uvicorn.run(app, host="localhost", port=8888)
+
+@pytest.fixture
+def server():
+    from multiprocessing import Process
+
+    proc = Process(target=run_server, args=(), daemon=True)
+    proc.start()
+    yield
+    proc.kill() # Cleanup after test

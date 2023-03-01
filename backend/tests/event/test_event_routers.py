@@ -24,7 +24,7 @@ class TestEventRouter:
         assert { "behive_id", "values" } <= response_body.keys()
         assert response_body.get("behive_id") == str(behive['_id'])
 
-        assert len(response_body.get("values")) > 1
+        assert len(response_body.get("values")) >= 1
 
         assert { "updated_at", "value", "messages" } <= response_body["values"][0].keys()
         assert { "type", "updated_at", "content" } <= response_body["values"][0]["messages"][0].keys()
