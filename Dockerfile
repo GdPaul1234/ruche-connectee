@@ -43,7 +43,7 @@ RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
 COPY ./backend ./
 COPY ./backend/env/docker.env env/prod.env
-EXPOSE 80
+EXPOSE 8000
 
 # Run the backend, ready to serve the frontend
 CMD ["python", "main.py"]
