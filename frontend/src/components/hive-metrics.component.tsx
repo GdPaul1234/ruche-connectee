@@ -61,11 +61,14 @@ export default function HiveMetricsComponent({ name, sensors }: {
       type KeyofIndoor = 'temperature_indoor' | 'humidity_indoor'
       type KeyofOutdoor = 'temperature_outdoor' | 'humidity_outdoor'
 
+      const indoor = sensors[`${key}_indoor` as KeyofIndoor]
+      const outdoor = sensors[`${key}_outdoor` as KeyofOutdoor]
+
       return {
         key,
         value: {
           unit: null,
-          value: `${sensors[`${key}_indoor` as KeyofIndoor].value}/${sensors[`${key}_outdoor` as KeyofOutdoor].value} °C`
+          value: `${indoor.value}/${outdoor.value} ${indoor.unit}`
         }
       }
     }
