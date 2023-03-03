@@ -1,0 +1,6 @@
+{
+  "type": "temperature_indoor",
+  "behive_id": "<behive_id>",
+  "owner_id": "<owner_id>",
+  "values": []
+}
