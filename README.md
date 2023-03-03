@@ -1,5 +1,7 @@
 # Ruche connectée
 
+![image](https://user-images.githubusercontent.com/61539971/222790917-704af435-f8a4-4753-9da1-053350a038ef.png)
+
 A web application to retrieve data from sensors in the hives built with FastApi, React and MongoDB
 
 ## Installation
