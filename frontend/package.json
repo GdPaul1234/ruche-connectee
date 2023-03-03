@@ -36,6 +36,7 @@
     "eject": "react-scripts eject",
     "build-api-client": "curl -s -o openapi.json http://localhost:8000/openapi.json && openapi --input openapi.json --output ./src/generated --useOptions"
   },
+  "proxy": "http://127.0.0.1:8000",
   "eslintConfig": {
     "extends": [
       "react-app",

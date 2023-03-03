@@ -18,7 +18,7 @@ import { OpenAPI } from './generated/core/OpenAPI'
 import { cookieGetValueByKey } from './services/cookie.service'
 import ErrorPage from './routes/error-page'
 
-OpenAPI.BASE = 'http://localhost:8000' // TODO: set it in env variable
+OpenAPI.BASE = ''
 OpenAPI.WITH_CREDENTIALS = true
 OpenAPI.CREDENTIALS = 'include'
 
