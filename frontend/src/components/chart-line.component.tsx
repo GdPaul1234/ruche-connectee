@@ -15,7 +15,7 @@ export const defaultOptions: ChartProps<'line'>['options'] = {
       type: 'time',
       time: {
         tooltipFormat: 'DD T',
-        displayFormats: { hour: 'ccc T' }
+        displayFormats: { hour: 'd LLL, T' }
       }
     },
     y: { beginAtZero: true }
