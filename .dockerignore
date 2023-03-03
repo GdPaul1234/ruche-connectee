@@ -1,0 +1,12 @@
+# front
+*/node_modules
+*/build
+openapi.json
+# end front
+
+# back
+*/__pycache__
+*/.pytest_cache
+# */env
+*/tests
+# end back

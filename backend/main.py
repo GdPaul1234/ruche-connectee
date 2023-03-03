@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 import uvicorn
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -12,10 +13,20 @@ from apps.event.routers import router as event_router
 from apps.user.user_router import router as user_router
 from apps.user.token_router import router as token_router
 
+# source: https://stackoverflow.com/a/73552966
+
+class SPAStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope):
+        try:
+            return await super().get_response(path, scope)
+        except Exception:
+            return await super().get_response("index.html", scope)
+
+
+
 app = FastAPI()
 
 # source: https://www.mongodb.com/developer/languages/python/farm-stack-fastapi-react-mongodb/
-
 
 @app.on_event("startup")
 async def startup_db_client():
@@ -33,9 +44,11 @@ app.include_router(token_router, tags=["tokens"], prefix='/api')
 app.include_router(behive_router, tags=["behives"], prefix="/api/behives")
 app.include_router(sensor_router, tags=["sensors"], prefix="/api/sensors")
 app.include_router(event_router, tags=["events"], prefix="/api/events")
+app.mount("/", SPAStaticFiles(directory="../frontend/build", html=True), name="app")
+
 
 origins = [
-    "http://localhost:3000"
+    "http://localhost:3000" # for dev env
 ]
 
 app.add_middleware(

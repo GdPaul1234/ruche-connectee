@@ -5,24 +5,16 @@ services:
     ports:
       - 27017:27017
     environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo-prod
+      - MONGO_INITDB_DATABASE=ruche-connectee
     volumes:
       - mongo-prod:/data/db
     networks:
       - backend
     command: [ "--replSet", "rs0", "--bind_ip_all" ]
-
-  mongo-test:
-    image: mongo:6.0.4-jammy
-    ports:
-      - 27018:27017
-    environment:
-      - ME_CONFIG_MONGODB_SERVER=mongo-test
-    volumes:
-      -  mongo-test:/data/db
-    networks:
-      - backend
-    command: [ "--replSet", "rs0", "--bind_ip_all" ]
+    healthcheck:
+      test: 'mongosh --eval "rs.initiate({ _id: \"rs0\", members: [ {_id: 0, host: \"mongo-prod\"} ] }).ok || rs.status().ok"'
+      interval: 10s
+      start_period: 30s
 
   mongo-express-prod:
     image: mongo-express
@@ -32,23 +24,24 @@ services:
       - ME_CONFIG_MONGODB_URL=mongodb://mongo-prod:27017/
       - ME_CONFIG_BASICAUTH_USERNAME=root
       - ME_CONFIG_BASICAUTH_PASSWORD=password
+    depends_on:
+      - mongo-prod
     networks:
       - backend
+      - default
 
-  mongo-express-test:
-    image: mongo-express
+  ruche-connectee-prod:
+    image: fripiane/ruche-connectee
     ports:
-      - 8082:8081
-    environment:
-      - ME_CONFIG_MONGODB_URL=mongodb://mongo-test:27017/
-      - ME_CONFIG_BASICAUTH_USERNAME=root
-      - ME_CONFIG_BASICAUTH_PASSWORD=password
+      - 3000:8000
+    depends_on:
+      - mongo-prod
     networks:
-    - backend
+      - backend
+      - default
 
 networks:
   backend:
 
 volumes:
   mongo-prod:
-  mongo-test:

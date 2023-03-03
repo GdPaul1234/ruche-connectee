@@ -1,5 +1,10 @@
 # Super Hive release notes
 
+## v0.5.0 [Deployment] Dockerization of the app
+
+- Add: Dockerfile
+- Add: docker-compose.yml for easy orchestration
+
 ## v0.4.0 [Pusher] Initial support for sensor pushers
 
 - Fix: Simplify pusher architecture
