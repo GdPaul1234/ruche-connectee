@@ -9,7 +9,7 @@ enum SensorType {
   battery
 }
 
-export const sensorTypeValues = Object.values(SensorType).concat('temperature', 'humidity').filter(v => typeof v === 'string')
+export const sensorTypeValues = Object.values(SensorType).concat('temperature', 'humidity', 'alert').filter(v => typeof v === 'string')
 
 function safeGetSensorValue(behiveId: string, fromDate: Date, toDate: Date, sensorType: 'temperature_indoor' | 'temperature_outdoor' | 'humidity_indoor' | 'humidity_outdoor') {
   return SensorsService.listSensorRecordsByTypeApiSensorsBehiveBehiveIdSensorTypeGet({
