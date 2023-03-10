@@ -117,4 +117,4 @@ async def delete_behive(
     if delete_result.deleted_count == 1:
         return {}
 
-    raise HTTPException(status_code=404, detail=f"Behive {id} not found")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Behive {id} not found")

@@ -2,7 +2,7 @@ from datetime import datetime
 import Adafruit_DHT
 import httpx
 
-from .config import Settings
+from config import Settings
 
 class TemperaturePusher:
     def __init__(self, settings: Settings) -> None:
@@ -39,7 +39,7 @@ class TemperaturePusher:
             try:
                 httpx.post(
                     f"{endpoint}/api/sensors/behive/{self._behive_id}/{sensor_type}_{self._sensor_location}",
-                    json={"updated_at": datetime.today().isoformat(),"value": value,"unit": unit},
+                    json={"updated_at": datetime.today(),"value": value,"unit": unit},
                     headers={"Authorization": f"Bearer ${self.get_token(endpoint)}"}
                 )
             except httpx.NetworkError:
@@ -53,7 +53,7 @@ if __name__ == '__main__':
 
     scriptname = os.path.basename(__file__)
     parser = argparse.ArgumentParser(scriptname)
-    parser.add_argument('--env-file', help='.env file path')
+    parser.add_argument('--env-file', help='.env file path', default='.env')
 
     options = parser.parse_args()
 

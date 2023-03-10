@@ -19,7 +19,7 @@ class WeightPusher:
     def read_sensor_value(self):
         # minimise the time spent by the CPU checking whether data is ready to be obtained from the HX711 module
         # while remaining as efficient as possible (use a separate thread)
-        with AdvancedHX711(self._sck_pin, self._dt_pin, self._ref_unit, self._offset) as hx:
+        with AdvancedHX711(self._dt_pin, self._sck_pin, self._ref_unit, self._offset) as hx:
             weight = hx.weight(timedelta(seconds=1))
 
         return weight

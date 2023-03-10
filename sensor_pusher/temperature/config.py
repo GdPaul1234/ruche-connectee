@@ -15,3 +15,6 @@ class Settings(BaseSettings):
 
     credential: Credential
 
+    class Config:
+        env_nested_delimiter = '__'
+
