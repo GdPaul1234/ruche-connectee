@@ -19,7 +19,7 @@ services:
   mongo-express-prod:
     image: mongo-express
     ports:
-      - 8081:8081
+      - 25599:8081
     environment:
       - ME_CONFIG_MONGODB_URL=mongodb://mongo-prod:27017/
       - ME_CONFIG_BASICAUTH_USERNAME=root
@@ -33,7 +33,7 @@ services:
   ruche-connectee-prod:
     image: fripiane/ruche-connectee
     ports:
-      - 3000:8000
+      - 8081:8000
     depends_on:
       - mongo-prod
     networks:
