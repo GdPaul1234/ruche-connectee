@@ -15,7 +15,7 @@ class TestEventRouter:
     @pytest.mark.anyio
     async def test_list_event_records_type(self, token, behive, events):
         with TestClient(app=app, base_url=self.base_url) as client:
-            response = client.get(f"/api/events/behive/{behive['_id']}", headers={"Authorization": f"Bearer ${token}"})
+            response = client.get(f"/api/events/behive/{behive['_id']}/", headers={"Authorization": f"Bearer ${token}"})
 
         assert response.status_code == 200
 
@@ -35,7 +35,7 @@ class TestEventRouter:
     async def test_create_event_record(self, token_behive, behive, mongodb):
         with TestClient(app=app, base_url=self.base_url) as client:
             response = client.post(
-                f"/api/events",
+                f"/api/events/",
                 json=jsonable_encoder(CreateEventRecordModel(
                     behive_id=str(behive["_id"]),
                     type="battery",

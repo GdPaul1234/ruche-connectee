@@ -9,7 +9,7 @@ class TestBehiveRouter:
     @pytest.mark.anyio
     async def test_create_behive(self, token):
         with TestClient(app=app, base_url=self.base_url) as client:
-            response = client.post("/api/behives", json={"name": "Ruche 1"}, headers={"Authorization": f"Bearer ${token}"})
+            response = client.post("/api/behives/", json={"name": "Ruche 1"}, headers={"Authorization": f"Bearer ${token}"})
 
         assert response.status_code == 201
 
@@ -26,7 +26,7 @@ class TestBehiveRouter:
     @pytest.mark.anyio
     async def test_get_all_user_behives(self, token, behive):
         with TestClient(app=app, base_url=self.base_url) as client:
-            response = client.get("/api/behives", headers={"Authorization": f"Bearer ${token}"})
+            response = client.get("/api/behives/", headers={"Authorization": f"Bearer ${token}"})
 
         assert response.status_code == 200
 
