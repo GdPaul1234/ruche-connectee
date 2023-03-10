@@ -1,9 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime
 import itertools
 
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
-from bson import ObjectId
+from bson import ObjectId, DatetimeMS
 
 from .models import EventOut, EventsOut, CreateEventRecordModel, GroupedEventOut, to_event_out
 
@@ -40,8 +40,7 @@ async def create_event_record(
     behive_owner_id = await behives_db.find_one({ "_id": ObjectId(event_record.behive_id) }, { "owner_id": 1 })
     owner_id = behive_owner_id["owner_id"]
 
-    event_record = jsonable_encoder(
-        event_record.dict() | {"owner_id": owner_id})
+    event_record = jsonable_encoder(event_record.dict(exclude={"updated_at"}) | {"owner_id": owner_id}) | { "updated_at": DatetimeMS(event_record.updated_at) }
 
     async with await get_mongo_db_client(request).start_session() as s:
         async with s.start_transaction():

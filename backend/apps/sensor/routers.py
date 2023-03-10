@@ -2,7 +2,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, Body, Request, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 from pymongo import ReturnDocument
-from bson import ObjectId
+from bson import ObjectId, DatetimeMS
 
 from .models import SensorType, SensorOut, SensorValueOut, CreateSensorRecordModel, to_sensor_out
 
@@ -45,7 +45,7 @@ async def create_sensor_record(
     behive_owner_id = await behives_db.find_one({ "_id": ObjectId(behive_id) }, { "owner_id": 1 })
     owner_id = behive_owner_id["owner_id"]
 
-    serialized_sensor_record = jsonable_encoder(sensor_record.dict() | {"owner_id": owner_id})
+    serialized_sensor_record = jsonable_encoder(sensor_record.dict(exclude={"updated_at"}) | {"owner_id": owner_id}) | { "updated_at": DatetimeMS(sensor_record.updated_at) }
 
     async with await get_mongo_db_client(request).start_session() as s:
         async with s.start_transaction():
