@@ -16,8 +16,13 @@ const backgroundColors = (chartType: 'line' | 'bar') => [
 export function apiSensorResponseToChartData(chartType: 'line' | 'bar', apiResponse: ApiSensorResponse): ChartData {
   const keys = Object.keys(apiResponse)
 
+  const labels = keys
+    .map(key => apiResponse[key])
+    .find(values => values.length === Math.max(...keys.map(key => apiResponse[key].length)))
+    ?.map(data => DateTime.fromISO(data.updated_at))
+
   return {
-    labels: apiResponse[keys[0]].map(data => DateTime.fromISO(data.updated_at)),
+    labels,
     datasets: keys.map((label, i) => ({
       label,
       data: apiResponse[label].map(data => data.value),
