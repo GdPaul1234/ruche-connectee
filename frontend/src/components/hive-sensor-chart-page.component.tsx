@@ -1,10 +1,11 @@
 import { useLoaderData, useNavigate, useSearchParams } from "react-router-dom"
 import { DateRangeSelectorComponent } from "../components/date-range-selector.component"
 
-import { ApiSensorResponse, apiSensorResponseToChartData } from "../services/chart.service"
+import { ApiSensorResponse, apiSensorResponseToChartData, ScatterChartData } from "../services/chart.service"
 import { initDateRangeState, useNavigateOnDateRange } from "../hooks/date-range.hook"
 import { lazy } from "react"
 import { ChartProps } from "react-chartjs-2"
+import ChartScatterLineComponent from "./chart-scatter-line.component"
 
 export type SensorLoaderArgs = {
   request: Request
@@ -28,7 +29,7 @@ const ChartLine = lazy(() => import("./chart-line.component"))
 const ChartBar = lazy(() => import("./chart-bar.component"))
 
 export function HiveBaseSensorPage({ chartType, footerChildren }: {
-  chartType: 'line' | 'bar'
+  chartType: 'line' | 'bar' | 'scatter'
   footerChildren?: (sensorResponse: ApiSensorResponse) => React.ReactNode
 }) {
   const [searchParams] = useSearchParams()
@@ -52,6 +53,7 @@ export function HiveBaseSensorPage({ chartType, footerChildren }: {
     <section>
       {chartType === 'line' && <ChartLine data={sensorChartData as ChartProps<'line'>['data']} />}
       {chartType === 'bar' && <ChartBar data={sensorChartData as ChartProps<'bar'>['data']} />}
+      {chartType === 'scatter' && <ChartScatterLineComponent data={sensorChartData as ScatterChartData} />}
     </section>
 
     <section className="mt-4">
