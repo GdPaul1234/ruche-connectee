@@ -61,7 +61,7 @@ async def create_sensor_record(
                 await update_behive_sensor_last_value(behives_db, behive_id, sensor_type, last_record, s)
                 return SensorValueOut(**last_record)
 
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Sensor not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sensor not found")
 
 
 @router.get("/behive/{behive_id}/{sensor_type}", response_description="Get behive sensor values by type", response_model=SensorOut)
